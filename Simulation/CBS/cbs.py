@@ -105,7 +105,7 @@ class Constraints(object):
             "EC: " + str([str(ec) for ec in self.edge_constraints])
 
 class Environment(object):
-    def __init__(self, dimension, agents, obstacles, moving_obstacles=None, movable_obstacles=None, v_ep=None, a_star_max_iter=-1, alpha=0.5, terraforming_radius=3):
+    def __init__(self, dimension, agents, obstacles, moving_obstacles=None, movable_obstacles=None, v_ep=None, a_star_max_iter=-1, alpha=100, terraforming_radius=3):
         if moving_obstacles is None:
             moving_obstacles = []
         self.dimension = dimension
@@ -207,7 +207,7 @@ class Environment(object):
                         new_delta[obs_id] = l_obs_prime
                         new_p = state.p + (1.0 if (dx, dy) != (0, 0) else 0.0)
                         if not rest_to_move:
-                            if l_obs_prime != target_agent and curr_obs_loc == target_agent:
+                            if l_obs_prime != target_agent:
                                 new_state = State(time=state.time + 1, location=Location(target_agent[0], target_agent[1]), delta_o=frozenset(new_delta.items()), p=new_p, to_move=())
                             else:
                                 new_state = State(time=state.time + 1, location=state.location, delta_o=frozenset(new_delta.items()), p=new_p, to_move=())
@@ -342,7 +342,7 @@ class Environment(object):
 
     def admissible_heuristic(self, state, agent_name):
         goal = self.agent_dict[agent_name]["goal"]
-        return fabs(state.location.x - goal.location.x) + fabs(state.location.y - goal.location.y)
+        return abs(state.location.x - goal.location.x) + abs(state.location.y - goal.location.y)
 
 
     def is_at_goal(self, state, agent_name):

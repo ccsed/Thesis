@@ -24,6 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('-slow_factor', help='Slow factor of visualization', default=1, type=int)
     parser.add_argument('-not_rand', help='Use if input has fixed tasks and delays', action='store_true')
     parser.add_argument('-radius', help="Terraforming radius (Radius k)", default=1, type=int)
+    parser.add_argument('-alpha', help="Weight alpha", default=100, type=float)
 
     args = parser.parse_args()
 
@@ -67,7 +68,7 @@ if __name__ == '__main__':
     tp = TokenPassingRecovery(agents, dimensions, obstacles, non_task_endpoints, simulation,
                               a_star_max_iter=args.a_star_max_iter, k=args.k,
                               replan_every_k_delays=False, pd=args.pd, p_max=args.p, p_iter=args.p_iter, terraforming_radius=args.radius,
-                              new_recovery=True, movable_obstacles=movable_obstacles)
+                              new_recovery=True, movable_obstacles=movable_obstacles, alpha=args.alpha)
     while tp.get_completed_tasks() != len(tasks):
         simulation.time_forward(tp)
 

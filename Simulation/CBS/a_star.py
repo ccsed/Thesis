@@ -47,7 +47,7 @@ class AStar:
         while heap and (self.max_iter == -1 or self.iter < self.max_iter):
             self.iter = self.iter + 1
             current = heapq.heappop(heap)[3]
-            state_key = (current.location.to_tuple(), current.delta_o, current.to_move)
+            state_key = (current.location.to_tuple(), current.time, current.to_move, current.delta_o)
             current_g = self.env.calculate_g(current)
             if state_key in closed_set and current_g >= closed_set[state_key]:
                 continue
@@ -56,9 +56,6 @@ class AStar:
                 return self.reconstruct_path(came_from, current)
             for neighbor in self.get_neighbors(current):
                 tentative_g_score = self.env.calculate_g(neighbor)
-                neighbor_key = (neighbor.location.to_tuple(), neighbor.delta_o, neighbor.to_move)
-                if neighbor_key in closed_set and tentative_g_score >= closed_set[neighbor_key]:
-                    continue
                 if tentative_g_score < g_score.get(neighbor, float('inf')):
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g_score
