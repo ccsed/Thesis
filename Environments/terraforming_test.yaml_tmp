@@ -37,5 +37,5 @@ task_freq: 0.1
 tasks:
 - goal: *id001
   start: *id002
-  start_time: 18
+  start_time: 6
   task_name: task0
