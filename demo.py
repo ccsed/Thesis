@@ -76,7 +76,21 @@ if __name__ == '__main__':
     for path in simulation.actual_paths.values():
         cost = cost + len(path)
     combined_schedule = simulation.actual_paths.copy()
-    combined_schedule.update(tp.get_token()['obstacles_paths'])
+    max_time = simulation.get_time()
+    cleaned_obs_paths = {}
+    for obs_id, path in tp.get_token()['obstacles_paths'].items():
+        time_map = {}
+        for step in path:
+            if step['t'] not in time_map:
+                time_map[step['t']] = step
+        continuous_path = []
+        last_pos = path[0] if path else {'x': 0, 'y': 0}
+        for t in range(max_time + 1):
+            if t in time_map:
+                last_pos = time_map[t]
+            continuous_path.append({'t': t, 'x': last_pos['x'], 'y': last_pos['y']})
+        cleaned_obs_paths[obs_id] = continuous_path
+    combined_schedule.update(cleaned_obs_paths)
     output = {'schedule': combined_schedule, 'cost': cost,
               'completed_tasks_times': tp.get_completed_tasks_times(),
               'n_replans': tp.get_n_replans()}

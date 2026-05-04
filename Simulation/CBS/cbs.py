@@ -105,16 +105,24 @@ class Constraints(object):
             "EC: " + str([str(ec) for ec in self.edge_constraints])
 
 class Environment(object):
-    def __init__(self, dimension, agents, obstacles, moving_obstacles=None, movable_obstacles=None, v_ep=None, a_star_max_iter=-1, alpha=100, terraforming_radius=3):
+    def __init__(self, dimension, agents, obstacles, moving_obstacles=None, movable_obstacles=None, v_ep=None, a_star_max_iter=-1, alpha=100, terraforming_radius=3, static_obstacles=None):
         if moving_obstacles is None:
             moving_obstacles = []
         self.dimension = dimension
         self.obstacles = obstacles
+        self.static_obstacles = static_obstacles if static_obstacles is not None else obstacles
         self.moving_obstacles = moving_obstacles
         self.movable_obstacles_map = {}
+        self.movable_obstacles_paths = {}
         if movable_obstacles:
-            for i, pos in enumerate(movable_obstacles):
-                self.movable_obstacles_map[tuple(pos)] = f"obs_{i}"
+            if isinstance(movable_obstacles, dict):
+                self.movable_obstacles_paths = movable_obstacles
+                for obs_id, path in movable_obstacles.items():
+                    init_pos = (path[0]['x'], path[0]['y']) if path else (0,0)
+                    self.movable_obstacles_map[init_pos] = obs_id
+            else:
+                for i, pos in enumerate(movable_obstacles):
+                    self.movable_obstacles_map[tuple(pos)] = f"obs_{i}"
         self.v_ep = set(tuple(e) for e in v_ep) if v_ep else set()
         self.a_star_max_iter = a_star_max_iter
         self.alpha = alpha
@@ -130,19 +138,33 @@ class Environment(object):
         self.a_star = AStar(self)
         self.obs_id_to_init_loc = {v: k for k, v in self.movable_obstacles_map.items()}
 
-    def get_obstacle_at(self, location, delta_o):
+    def get_obstacle_at(self, location, delta_o, time=None):
         loc_tuple = location.to_tuple()
         curr_delta_dict = dict(delta_o)
         for obs_id, obs_pos in curr_delta_dict.items():
             if obs_pos == loc_tuple:
                 return obs_id
+        if time is not None and self.movable_obstacles_paths:
+            for obs_id, path in self.movable_obstacles_paths.items():
+                if obs_id in curr_delta_dict:
+                    continue
+                current_pos = (path[0]['x'], path[0]['y']) if path else None
+                for step in path:
+                    if step['t'] <= time:
+                        current_pos = (step['x'], step['y'])
+                    else:
+                        break
+                if current_pos == loc_tuple:
+                    return obs_id
+            return None
+
         if loc_tuple in self.movable_obstacles_map:
             obs_id = self.movable_obstacles_map[loc_tuple]
             if obs_id not in curr_delta_dict:
                 return obs_id
         return None
 
-    def get_neighbors(self, state):
+    def get_neighbors(self, state, allow_terraforming=True):
         neighbors = []
         if not state.is_intermidiate():
             candidates = [Location(state.location.x, state.location.y), 
@@ -157,6 +179,9 @@ class Environment(object):
                     continue
                 if (l_prime.x, l_prime.y, state.time + 1) in self.moving_obstacles:
                     continue
+                if (state.location.x, state.location.y, state.time + 1) in self.moving_obstacles and (l_prime.x, l_prime.y, state.time) in self.moving_obstacles:
+                    if self.moving_obstacles[(state.location.x, state.location.y, state.time + 1)] == self.moving_obstacles[(l_prime.x, l_prime.y, state.time)]:
+                        continue
                 collision_idle = False
                 for (ox, oy, ot), name in self.moving_obstacles.items():
                     if ot < 0: 
@@ -165,19 +190,28 @@ class Environment(object):
                             break
                 if collision_idle: 
                     continue
-                obs_id = self.get_obstacle_at(l_prime, state.delta_o)
+                obs_id = self.get_obstacle_at(l_prime, state.delta_o, time=state.time + 1)
                 if obs_id is None:
                     new_state = State(time=state.time+1, location=l_prime, delta_o=state.delta_o, p=state.p)
                     neighbors.append(new_state)
-                else:
+                elif allow_terraforming:
                     new_state = State(time=state.time, location=state.location, delta_o=state.delta_o, p=state.p, to_move=((obs_id, l_prime.to_tuple()),))
                     neighbors.append(new_state)
         else:
             (obs_id, target_agent), *rest_to_move = state.to_move
             curr_delta = dict(state.delta_o)
             l_init = self.obs_id_to_init_loc[obs_id]
-            curr_obs_loc = curr_delta.get(obs_id, l_init)
-            
+            if obs_id in curr_delta:
+                curr_obs_loc = curr_delta[obs_id]
+            else:
+                curr_obs_loc = l_init
+                if self.movable_obstacles_paths and obs_id in self.movable_obstacles_paths:
+                    path = self.movable_obstacles_paths[obs_id]
+                    for step in path:
+                        if step['t'] <= state.time:
+                            curr_obs_loc = (step['x'], step['y'])
+                        else:
+                            break
             moves = [(0, 0), (0, 1), (0, -1), (1, 0), (-1, 0)]
             for dx, dy in moves:
                     l_obs_prime = (curr_obs_loc[0] + dx, curr_obs_loc[1] + dy)
@@ -199,20 +233,30 @@ class Environment(object):
                                 break
                     if collision_idle: 
                         continue
-                    blocking_obs_id = self.get_obstacle_at(Location(l_obs_prime[0], l_obs_prime[1]), state.delta_o)
+                    blocking_obs_id = self.get_obstacle_at(Location(l_obs_prime[0], l_obs_prime[1]), state.delta_o, time=state.time)
                     if blocking_obs_id == obs_id:
                         blocking_obs_id = None
                     if blocking_obs_id is None:
                         new_delta = dict(state.delta_o)
                         new_delta[obs_id] = l_obs_prime
-                        new_p = state.p + (1.0 if (dx, dy) != (0, 0) else 0.0)
+                        # if (dx, dy) != (0, 0):
+                        #     if not self.is_well_formed(new_delta):
+                        #         continue
+                        new_p = state.p + 1
+                        new_delta_fs = frozenset(new_delta.items())
                         if not rest_to_move:
+                            if not hasattr(self, 'wf_cache'):
+                                self.wf_cache = {}
+                            if new_delta_fs not in self.wf_cache:
+                                self.wf_cache[new_delta_fs] = self.is_well_formed(new_delta)
+                            if not self.wf_cache[new_delta_fs]:
+                                continue
                             if l_obs_prime != target_agent:
-                                new_state = State(time=state.time + 1, location=Location(target_agent[0], target_agent[1]), delta_o=frozenset(new_delta.items()), p=new_p, to_move=())
+                                new_state = State(time=state.time + 1, location=Location(target_agent[0], target_agent[1]), delta_o=new_delta_fs, p=new_p, to_move=())
                             else:
-                                new_state = State(time=state.time + 1, location=state.location, delta_o=frozenset(new_delta.items()), p=new_p, to_move=())
+                                new_state = State(time=state.time + 1, location=state.location, delta_o=new_delta_fs, p=new_p, to_move=())
                         else:
-                            new_state = State(time=state.time, location=state.location, delta_o=frozenset(new_delta.items()), p=new_p, to_move=tuple(rest_to_move))
+                            new_state = State(time=state.time, location=state.location, delta_o=new_delta_fs, p=new_p, to_move=tuple(rest_to_move))
                         neighbors.append(new_state)
                     else:
                         if any(blocking_obs_id == item[0] for item in state.to_move) or blocking_obs_id == obs_id:
@@ -343,11 +387,42 @@ class Environment(object):
     def admissible_heuristic(self, state, agent_name):
         goal = self.agent_dict[agent_name]["goal"]
         return abs(state.location.x - goal.location.x) + abs(state.location.y - goal.location.y)
-
+    
+    def calculate_detour_bound(self, agent_name):
+        start_loc = self.agent_dict[agent_name]["start"].location.to_tuple()
+        goal_loc = self.agent_dict[agent_name]["goal"].location.to_tuple()
+        static_walls = set(self.obstacles)
+        for loc in self.movable_obstacles_map.keys():
+            static_walls.add(loc)
+        queue = [(0, start_loc)]
+        visited = {start_loc}
+        moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        while queue:
+            dist, curr = queue.pop(0)
+            if curr == goal_loc:
+                return dist
+            for dx, dy in moves:
+                nxt = (curr[0] + dx, curr[1] + dy)
+                if not (0 <= nxt[0] < self.dimension[0] and 0 <= nxt[1] < self.dimension[1]):
+                    continue
+                if nxt in static_walls:
+                    continue
+                if nxt not in visited:
+                    visited.add(nxt)
+                    queue.append((dist + 1, nxt))
+        return float('inf')
 
     def is_at_goal(self, state, agent_name):
         goal_state = self.agent_dict[agent_name]["goal"]
-        return state.is_equal_except_time(goal_state)
+        if state.is_equal_except_time(goal_state):
+            if state.is_intermidiate():
+                return False
+            if not hasattr(self, 'wf_cache'):
+                self.wf_cache = {}
+            if state.delta_o not in self.wf_cache:
+                self.wf_cache[state.delta_o] = self.is_well_formed(dict(state.delta_o))
+            return self.wf_cache[state.delta_o]
+        return False
 
     def make_agent_dict(self):
         for agent in self.agents:
@@ -371,6 +446,34 @@ class Environment(object):
 
     def compute_solution_cost(self, solution):
         return sum([len(path) for path in solution.values()])
+
+    def is_well_formed(self, delta_o_dict):
+        if len(self.v_ep) <= 1:
+            return True
+        current_obs = set(self.static_obstacles)
+        for loc, obs_id in self.movable_obstacles_map.items():
+            current_obs.add(delta_o_dict.get(obs_id, loc))
+        ep_list = list(self.v_ep)
+        start_ep = ep_list[0]
+        visited = {start_ep}
+        reached_endpoints = {start_ep}
+        queue = [start_ep]
+        moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        while queue:
+            curr = queue.pop(0)
+            for dx, dy in moves:
+                nxt = (curr[0] + dx, curr[1] + dy)
+                if not (0 <= nxt[0] < self.dimension[0] and 0 <= nxt[1] < self.dimension[1]):
+                    continue
+                if nxt in current_obs:
+                    continue
+                if nxt not in visited:
+                    visited.add(nxt)
+                    if nxt in self.v_ep:
+                        reached_endpoints.add(nxt)
+                    else:
+                        queue.append(nxt)
+        return len(reached_endpoints) == len(self.v_ep)
 
 class HighLevelNode(object):
     def __init__(self):
@@ -441,14 +544,29 @@ class CBS(object):
         plan = {'agents': {}, 'obstacles': {}}
         init_locations = self.env.obs_id_to_init_loc
         for agent, path in solution.items():
-            path_dict_list = [{'t':state.time, 'x':state.location.x, 'y':state.location.y} for state in path]
+            standard_path = [state for state in path if not state.is_intermidiate()]
+            path_dict_list = [{'t':state.time, 'x':state.location.x, 'y':state.location.y} for state in standard_path]
             plan['agents'][agent] = path_dict_list
-            for state in path:
+            moved_obstacles = set()
+            for state in standard_path:
+                for obs_id in dict(state.delta_o).keys():
+                    moved_obstacles.add(obs_id)
+            for state in standard_path:
                 curr_delta = dict(state.delta_o)
-                for obs_id, init_pos in init_locations.items():
+                for obs_id in moved_obstacles:
                     if obs_id not in plan['obstacles']:
                         plan['obstacles'][obs_id] = []
-                    pos = curr_delta.get(obs_id, init_pos)
+                    if obs_id in curr_delta:
+                        pos = curr_delta[obs_id]
+                    else:
+                        pos = init_locations[obs_id]
+                        if hasattr(self.env, 'movable_obstacles_paths') and obs_id in self.env.movable_obstacles_paths:
+                            path = self.env.movable_obstacles_paths[obs_id]
+                            for step in path:
+                                if step['t'] <= state.time:
+                                    pos = (step['x'], step['y'])
+                                else:
+                                    break
                     plan['obstacles'][obs_id].append({'t': state.time, 'x': pos[0], 'y': pos[1]})
             for entity_id in plan['obstacles']:
                 original_traj = plan['obstacles'][entity_id]
@@ -456,8 +574,7 @@ class CBS(object):
                 if original_traj:
                     new_traj.append(original_traj[0])
                     for i in range(1, len(original_traj)):
-                        if original_traj[i] != original_traj[i-1]:
-                            new_traj.append(original_traj[i])
+                        new_traj.append(original_traj[i])
                 plan['obstacles'][entity_id] = new_traj
         return plan
 

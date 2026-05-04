@@ -1,0 +1,45 @@
+agents:
+- name: agent0
+  start: [0, 0] # Parcheggio in basso a sx
+- name: agent1
+  start: [0, 6] # Parcheggio in alto a sx
+
+map:
+  dimensions: [9, 7]
+  obstacles:
+  # Muro centrale verticale (x=4)
+  - [4, 1]
+  - [4, 3]
+  - [4, 5]
+  
+  movable_obstacles:
+  # Ostacoli mobili che bloccano i varchi nel muro
+  - [4, 2]
+  - [4, 4]
+  
+  non_task_endpoints:
+  # 4 Parcheggi sicuri agli angoli della mappa
+  - [0, 0]
+  - [0, 6]
+  - [8, 0]
+  - [8, 6]
+  
+  start_locations:
+  # Aree di Pickup (Sinistra)
+  - [1, 2]
+  - [1, 4]
+  
+  goal_locations:
+  # Aree di Delivery (Destra)
+  - [7, 2]
+  - [7, 4]
+
+# Questi task verranno IGNORATI se togliamo il flag -not_rand, 
+# ma servono per non far arrabbiare il parser del file.
+tasks: []
+delays: {}
+
+# === PARAMETRI PER LA GENERAZIONE MAPD (LIFELONG) ===
+n_tasks: 4                # Genereremo esattamente 4 task
+task_freq: 0.5            # Frequenza di apparizione (circa 1 ogni 2 step)
+n_delays_per_agent: 0     # Nessun ritardo per ora, testiamo l'assegnazione

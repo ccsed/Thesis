@@ -5,6 +5,7 @@ author: Giacomo Lodigiani (@Lodz97)
 """
 import heapq
 from itertools import count
+from collections import defaultdict
 
 
 class AStar:
@@ -25,19 +26,24 @@ class AStar:
         return total_path[::-1]
 
     def search(self, agent_name):
-        """
-        low level search
-        """
+        detour_path = self._run_search(agent_name, allow_terraforming=False, upper_bound=float('inf'))
+        
+        if detour_path:
+            upper_bound = self.env.calculate_g(detour_path[-1])
+        else:
+            upper_bound = float('inf')
+
+        self.iter = 0 
+        return self._run_search(agent_name, allow_terraforming=True, upper_bound=upper_bound)
+
+    def _run_search(self, agent_name, allow_terraforming=True, upper_bound=float('inf')):
         initial_state = self.agent_dict[agent_name]["start"]
         step_cost = 1
-
-        closed_set = {}
-
+        closed_set = defaultdict(list)
         came_from = {}
-
+        
         g_score = {}
         g_score[initial_state] = self.env.calculate_g(initial_state)    
-
         h_score = self.admissible_heuristic(initial_state, agent_name)
 
         heap = []
@@ -46,21 +52,46 @@ class AStar:
 
         while heap and (self.max_iter == -1 or self.iter < self.max_iter):
             self.iter = self.iter + 1
-            current = heapq.heappop(heap)[3]
-            state_key = (current.location.to_tuple(), current.time, current.to_move, current.delta_o)
-            current_g = self.env.calculate_g(current)
-            if state_key in closed_set and current_g >= closed_set[state_key]:
+            
+            current_f, _, _, current = heapq.heappop(heap)
+            
+            if current_f > upper_bound:
                 continue
-            closed_set[state_key] = current_g
+            
+            current_g = self.env.calculate_g(current)
+            base_key = (current.location.to_tuple(), current.time, current.to_move)
+            is_dominated = False
+            if not current.to_move:
+                for (c_delta_o, c_p, c_g) in closed_set[base_key]:
+                    if c_g <= current_g and c_p <= current.p and c_delta_o.issubset(current.delta_o):
+                        is_dominated = True
+                        break
+            else:
+                for (c_delta_o, c_p, c_g) in closed_set[base_key]:
+                    if c_g <= current_g and c_p <= current.p and c_delta_o == current.delta_o:
+                        is_dominated = True
+                        break
+            if is_dominated:
+                continue
+            closed_set[base_key].append((current.delta_o, current.p, current_g))
+
+            # state_key = (current.location.to_tuple(), current.time, current.to_move, current.delta_o)
+            # current_g = self.env.calculate_g(current)
+            # if state_key in closed_set and closed_set[state_key] <= current_g:
+            #     continue
+            # closed_set[state_key] = current_g
+            
             if self.is_at_goal(current, agent_name):
                 return self.reconstruct_path(came_from, current)
-            for neighbor in self.get_neighbors(current):
+                
+            for neighbor in self.get_neighbors(current, allow_terraforming=allow_terraforming):
                 tentative_g_score = self.env.calculate_g(neighbor)
                 if tentative_g_score < g_score.get(neighbor, float('inf')):
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g_score
                     f_score = tentative_g_score + self.admissible_heuristic(neighbor, agent_name)
                     heapq.heappush(heap, (f_score, self.admissible_heuristic(neighbor, agent_name), next(index), neighbor))
+                    
             if self.iter == self.max_iter:
                 print('Low level A* - Maximum iteration reached')
         return False

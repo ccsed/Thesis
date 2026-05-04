@@ -20,10 +20,10 @@ class TokenPassingRecovery(object):
         if len(agents) > len(non_task_endpoints):
             print('There are more agents than non task endpoints, instance is not well-formed.')
             exit(1)
-        self.v_ep = self.non_task_endpoints.copy()
+        self.v_ep = set(tuple(ep) for ep in self.non_task_endpoints)
         for t in simulation.tasks:
-            self.v_ep.append(tuple(t['start']))
-            self.v_ep.append(tuple(t['goal']))
+            self.v_ep.add(tuple(t['start']))
+            self.v_ep.add(tuple(t['goal']))
         # TODO: Check all properties for well-formedness
         self.token = {}
         self.simulation = simulation
@@ -67,13 +67,14 @@ class TokenPassingRecovery(object):
             self.p_iter = 1
         self.new_recovery = new_recovery
         self.init_token()
+        self.check_initial_well_formedness()
 
     def init_token(self):
         self.token['agents'] = {}
         self.token['tasks'] = {}
         self.token['obstacles_paths'] = {}
         self.token['original_obs_pos'] = {}
-        for i, pos in enumerate(self.movable_obstacles):
+        for i, pos in enumerate(self.movable_obstacles_list):
             obs_name = f"obs_{i}"
             self.token['obstacles_paths'][obs_name] = [{'t': 0, 'x': pos[0], 'y': pos[1]}]
             self.token['original_obs_pos'][obs_name] = tuple(pos)
@@ -98,12 +99,89 @@ class TokenPassingRecovery(object):
         self.token['prob_exceeded'] = False
         self.token['deadlock_count_per_agent'] = defaultdict(lambda: 0)
 
+    def check_initial_well_formedness(self):
+        if len(self.v_ep) <= 1:
+            return
+        ep_tuples = set(tuple(ep) for ep in self.v_ep)
+        for obs in self.movable_obstacles_list:
+            if tuple(obs) in ep_tuples:
+                import sys
+                print(f"\nFATAL ERROR: Movable obstacle parked on endpoint {tuple(obs)}!")
+                sys.exit(1)
+        current_obs = set(self.obstacles)
+        for obs in self.movable_obstacles_list:
+            current_obs.add(tuple(obs))
+        ep_list = list(ep_tuples)
+        start_ep = ep_list[0]
+        visited = {start_ep}
+        reached_endpoints = {start_ep}
+        queue = [start_ep]
+        moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        while queue:
+            curr = queue.pop(0)
+            for dx, dy in moves:
+                nxt = (curr[0] + dx, curr[1] + dy)
+                if not (0 <= nxt[0] < self.dimensions[0] and 0 <= nxt[1] < self.dimensions[1]):
+                    continue
+                if nxt in current_obs:
+                    continue
+                if nxt not in visited:
+                    visited.add(nxt)
+                    if nxt in ep_tuples:
+                        reached_endpoints.add(nxt)
+                    else:
+                        queue.append(nxt)
+        if len(reached_endpoints) != len(self.v_ep):
+            import sys
+            print("\n" + "="*50)
+            print("FATAL ERROR: The initial environment is NOT Well-Formed!")
+            print(f"Total endpoints in map: {ep_tuples}")
+            print(f"Endpoints reachable from {start_ep}: {reached_endpoints}")
+            print(f"Missing endpoints: {ep_tuples - reached_endpoints}")
+            print(f"Grid Dimensions: {self.dimensions}")
+            print("Endpoints are trapped or separated by obstacles.")
+            print("="*50 + "\n")
+            sys.exit(1)
+
     def get_idle_agents(self):
         agents = {}
         for name, path in self.token['agents'].items():
             if len(path) == 1:
                 agents[name] = path
         return agents
+    
+    # def get_current_movable_obstacles(self):
+    #     current_obs = []
+    #     base_time = self.simulation.get_time() - 1
+    #     for i in range(len(self.movable_obstacles_list)):
+    #         obs_id = f"obs_{i}"
+    #         path = self.token['obstacles_paths'][obs_id]
+    #         current_pos = path[0]
+    #         for step in path:
+    #             if step['t'] <= base_time:
+    #                 current_pos = step
+    #             else:
+    #                 break
+    #         current_obs.append((current_pos['x'], current_pos['y']))
+    #     return current_obs
+    def get_current_movable_obstacles(self):
+        timelines = {}
+        abs_time_start = self.simulation.get_time() - 1
+        for i in range(len(self.movable_obstacles_list)):
+            obs_id = f"obs_{i}"
+            path = self.token['obstacles_paths'][obs_id]
+            
+            valid_steps = [step for step in path if step['t'] <= abs_time_start]
+            base_pos = max(valid_steps, key=lambda s: s['t']) if valid_steps else ({'x': 0, 'y': 0} if not path else path[0])
+                    
+            rel_path = [{'t': 0, 'x': base_pos['x'], 'y': base_pos['y']}]
+            
+            for step in path:
+                if step['t'] > abs_time_start:
+                    rel_path.append({'t': step['t'] - abs_time_start, 'x': step['x'], 'y': step['y']})
+                    
+            timelines[obs_id] = rel_path
+        return timelines
 
     def admissible_heuristic(self, task_pos, agent_pos):
         return fabs(task_pos[0] - agent_pos[0]) + fabs(task_pos[1] - agent_pos[1])
@@ -118,6 +196,9 @@ class TokenPassingRecovery(object):
 
     def get_moving_obstacles_agents(self, agents, time_start):
         obstacles = {}
+        current_sim_time = self.simulation.get_time()
+        abs_time_start = (current_sim_time - 1) + time_start
+        base_time = current_sim_time - 1
         for name, path in agents.items():
             if len(path) > time_start and len(path) > 1:
                 for i in range(time_start, len(path)):
@@ -131,17 +212,21 @@ class TokenPassingRecovery(object):
                     if i == len(path) - 1:
                         obstacles[(path[i][0], path[i][1], -k)] = name
         for obs_id, path in self.token['obstacles_paths'].items():
+            base_pos = path[0]
             for step in path:
-                if step['t'] >= time_start:
-                    relative_t = step['t'] - time_start
-                    obstacles[(step['x'], step['y'], relative_t)] = obs_id
-                    for j in range(1, self.k + 1):
-                        if relative_t - j >= 0:
-                            obstacles[(step['x'], step['y'], relative_t - j)] = obs_id
-                        obstacles[(step['x'], step['y'], relative_t + j)] = obs_id
-            last_step = path[-1]
-            if last_step['t'] < time_start:
-                obstacles[(last_step['x'], last_step['y'], -1)] = obs_id
+                if step['t'] <= base_time:
+                    base_pos = step
+                else:
+                    break
+            for step in path:
+                if step['t'] >= abs_time_start:
+                    relative_t = step['t'] -abs_time_start
+                    if step['x'] != base_pos['x'] or step['y'] != base_pos['y']:
+                        obstacles[(step['x'], step['y'], relative_t)] = obs_id
+                        for j in range(1, self.k + 1):
+                            if relative_t - j >= 0:
+                                obstacles[(step['x'], step['y'], relative_t - j)] = obs_id
+                            obstacles[(step['x'], step['y'], relative_t + j)] = obs_id
         return obstacles
 
     def get_idle_obstacles_agents(self, agents_paths, delayed_agents, time_start):
@@ -168,7 +253,7 @@ class TokenPassingRecovery(object):
         dist = -1
         res = -1
         for endpoint in self.non_task_endpoints:
-            if endpoint not in self.token['occupied_non_task_endpoints']:
+            if tuple(endpoint) not in self.token['occupied_non_task_endpoints']:
                 if dist == -1:
                     dist = self.admissible_heuristic(endpoint, agent_pos)
                     res = endpoint
@@ -247,8 +332,8 @@ class TokenPassingRecovery(object):
         moving_obstacles_agents = self.get_moving_obstacles_agents(self.token['agents'], 0)
         idle_obstacles_agents = self.get_idle_obstacles_agents(all_idle_agents.values(), all_delayed_agents, 0)
         agent = {'name': agent_name, 'start': agent_pos, 'goal': closest_non_task_endpoint}
-        env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents, moving_obstacles_agents, movable_obstacles=self.movable_obstacles_list, v_ep=self.v_ep,
-                          a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius)
+        env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents, moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), v_ep=self.v_ep,
+                          a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles)
         cbs = CBS(env)
         result = self.search(cbs, agent_name, moving_obstacles_agents)
         if not result:
@@ -283,8 +368,8 @@ class TokenPassingRecovery(object):
             moving_obstacles_agents = self.get_moving_obstacles_agents(self.token['agents'], 0)
             idle_obstacles_agents = self.get_idle_obstacles_agents(all_idle_agents.values(), all_delayed_agents, 0)
             agent = {'name': agent_name, 'start': agent_pos, 'goal': random_close_cell}
-            env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents, moving_obstacles_agents, movable_obstacles=self.movable_obstacles_list, v_ep=self.v_ep,
-                              a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius)
+            env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents, moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), v_ep=self.v_ep,
+                              a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles)
             cbs = CBS(env)
             result = self.search(cbs, agent_name, moving_obstacles_agents)
             if not result:
@@ -428,7 +513,7 @@ class TokenPassingRecovery(object):
                 idle_obstacles_agents = self.get_idle_obstacles_agents(all_idle_agents.values(), all_delayed_agents, 0)
                 agent = {'name': agent_name, 'start': agent_pos, 'goal': closest_task[0]}
                 env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents,
-                                  moving_obstacles_agents, movable_obstacles=self.movable_obstacles_list, v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius)
+                                  moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles)
                 cbs = CBS(env)
                 result_start = self.search(cbs, agent_name, moving_obstacles_agents)
                 if not result_start:
@@ -446,9 +531,25 @@ class TokenPassingRecovery(object):
                     moving_obstacles_agents = self.get_moving_obstacles_agents(self.token['agents'], cost1 - 1)
                     idle_obstacles_agents = self.get_idle_obstacles_agents(all_idle_agents.values(), all_delayed_agents,
                                                                            cost1 - 1)
+                    updated_obs_pos = {}
+                    abs_start_time = self.simulation.get_time() - 1 + (cost1 - 1)
+                    for i in range(len(self.movable_obstacles_list)):
+                        obs_id = f"obs_{i}"
+                        if obs_id in start_obs_trajectories and len(start_obs_trajectories[obs_id]) > 0:
+                            last_pos = start_obs_trajectories[obs_id][-1]
+                            updated_obs_pos[obs_id] = [{'t': 0, 'x': last_pos['x'], 'y': last_pos['y']}]
+                        else:
+                            path = self.token['obstacles_paths'][obs_id]
+                            valid_steps = [step for step in path if step['t'] <= abs_start_time]
+                            base_pos = max(valid_steps, key=lambda s: s['t']) if valid_steps else ({'x': 0, 'y': 0} if not path else path[0])
+                            rel_path = [{'t': 0, 'x': base_pos['x'], 'y': base_pos['y']}]
+                            for step in path:
+                                if step['t'] >= abs_start_time:
+                                    rel_path.append({'t': step['t'] - abs_start_time, 'x': step['x'], 'y': step['y']})
+                            updated_obs_pos[obs_id] = rel_path
                     agent = {'name': agent_name, 'start': closest_task[0], 'goal': closest_task[1]}
                     env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents,
-                                      moving_obstacles_agents, movable_obstacles=self.movable_obstacles_list, v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius)
+                                      moving_obstacles_agents, movable_obstacles=updated_obs_pos, v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles)
                     cbs = CBS(env)
                     result_goal = self.search(cbs, agent_name, moving_obstacles_agents)
                     if not result_goal:
@@ -462,14 +563,22 @@ class TokenPassingRecovery(object):
                         path_to_task_goal = result_goal['agents']
                         goal_obs_trajectories = result_goal['obstacles']
                         cost2 = env.compute_solution_cost(path_to_task_goal)
-                        all_new_obs_moves = start_obs_trajectories.copy()
+                        current_sim_time = self.simulation.get_time()
+                        base_time = current_sim_time - 1
+                        for obs_id, traj in start_obs_trajectories.items():
+                            if len(traj) > 0:
+                                first_abs_t = base_time + traj[0]['t']
+                                self.token['obstacles_paths'][obs_id] = [step for step in self.token['obstacles_paths'][obs_id] if step['t'] < first_abs_t]
+                            for step in traj:
+                                abs_t = base_time + step['t']
+                                self.token['obstacles_paths'][obs_id].append({'t': abs_t, 'x': step['x'], 'y': step['y']})
                         for obs_id, traj in goal_obs_trajectories.items():
-                            if obs_id in all_new_obs_moves:
-                                all_new_obs_moves[obs_id].extend(traj)
-                            else:
-                                all_new_obs_moves[obs_id] = traj
-                        for obs_id, final_traj in all_new_obs_moves.items():
-                            self.token['obstacles_paths'][obs_id] = final_traj
+                            if len(traj) > 0:
+                                first_abs_t = base_time + (cost1 - 1) + traj[0]['t']
+                                self.token['obstacles_paths'][obs_id] = [step for step in self.token['obstacles_paths'][obs_id] if step['t'] < first_abs_t]
+                            for step in traj:
+                                abs_t = base_time + (cost1 - 1) + step['t']
+                                self.token['obstacles_paths'][obs_id].append({'t': abs_t, 'x': step['x'], 'y': step['y']})
                         if agent_name not in self.token['agents_to_tasks']:
                             self.token['tasks'].pop(closest_task_name)
                             task = available_tasks.pop(closest_task_name)

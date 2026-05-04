@@ -1,0 +1,49 @@
+agents:
+- name: agent0
+  start: [0, 1]
+- name: agent1
+  start: [0, 0]
+
+map:
+  dimensions: [6, 3]
+  
+  obstacles:
+  # Un solo blocco statico in basso
+  - [2, 0]
+  
+  movable_obstacles:
+  # UN SOLO ostacolo mobile che blocca la via centrale
+  - [2, 1]
+  
+  non_task_endpoints:
+  # Parcheggi extra
+  - [0, 2]
+  - [5, 2]
+  
+  start_locations:
+  - [0, 1]
+  - [0, 0]
+  
+  goal_locations:
+  - [4, 1]
+  - [4, 0]
+
+tasks:
+# L'agente 0 parte subito
+- task_name: task0
+  start_time: 0
+  start: [0, 1]
+  goal: [4, 1]
+# L'agente 1 parte al tempo 2
+- task_name: task1
+  start_time: 2
+  start: [0, 0]
+  goal: [4, 0]
+
+delays:
+  agent0: []
+  agent1: []
+
+n_tasks: 2
+task_freq: 1
+n_delays_per_agent: 0

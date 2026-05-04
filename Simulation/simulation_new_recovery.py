@@ -68,8 +68,10 @@ class SimulationNewRecovery(object):
                     {'t': self.time, 'x': current_agent_pos['x'], 'y': current_agent_pos['y']})
             else:
                 if self.delays is not None:
-                    if self.time in self.delays[agent['name']]:
+                    if agent['name'] in self.delays and self.time in self.delays[agent['name']]:
                         self.agents_moved.add(agent['name'])
+                    # if self.time in self.delays[agent['name']]:
+                    #     self.agents_moved.add(agent['name'])
                         if algorithm.get_replan_every_k_delays():
                             self.increase_delay_counter(agent, algorithm.get_k())
                         #self.delayed_agents.add(agent['name'])
@@ -181,6 +183,18 @@ if __name__ == '__main__':
     cost = 0
     for path in simulation.actual_paths.values():
         cost = cost + len(path)
+    obstacles_paths = tp.get_token()['obstacles_paths']
+    max_time = simulation.get_time()
+    for obs_id, path in obstacles_paths.items():
+        continuous_path = []
+        path_dict = {step['t']: step for step in path}
+        if len(path) > 0:
+            last_pos = path[0]
+        for t in range(max_time + 1):
+            if t in path_dict:
+                last_pos = path_dict[t]
+            continuous_path.append({'t': t, 'x': last_pos['x'], 'y': last_pos['y']})
+        simulation.actual_paths[obs_id] = continuous_path
     output = {'schedule': simulation.actual_paths, 'cost': cost, 'completed_tasks_times': tp.get_completed_tasks_times(),
               'n_replans': tp.get_n_replans()}
     with open(args.output, 'w') as output_yaml:
