@@ -1,48 +1,56 @@
-agents:
-- name: agent0
-  start: [0, 2]
-
+n_tasks: 2
+task_freq: 10
+n_delays_per_agent: 0
 map:
-  dimensions: [7, 6]
-  
+  dimensions: [7, 7]
   obstacles:
-  # Muro verticale centrale (x=3)
-  - [3, 3]
-  - [3, 4]
-  # [3, 5] è il corridoio libero per la Well-Formedness (Detour)
-  # [3, 2] è il varco per il Task 0
-  # [3, 1] è il varco per il Task 1
-  # [3, 0] è una tasca di parcheggio aggiuntiva
-  
+    # Blocco in alto a sx
+    - [1, 1]
+    - [2, 1]
+    - [1, 2]
+    - [2, 2]
+    # Blocco in alto a dx
+    - [4, 1]
+    - [5, 1]
+    - [4, 2]
+    - [5, 2]
+    # Blocco in basso a sx
+    - [1, 4]
+    - [2, 4]
+    - [1, 5]
+    - [2, 5]
+    # Blocco in basso a dx
+    - [4, 4]
+    - [5, 4]
+    - [4, 5]
+    - [5, 5]
   movable_obstacles:
-  - [3, 2] # Parte bloccando il varco in alto
-  
+    - [3, 3] # Ostacolo esattamente al centro della scorciatoia
   non_task_endpoints:
-  - [0, 5]
-  - [6, 5]
-  
+    - [1, 3]
+    - [5, 3]
+    - [3, 1]
+    - [3, 5]
   start_locations:
-  - [1, 2] # Start task 0
-  - [5, 1] # Start task 1
-  
+    - [1, 3]
+    - [3, 1]
   goal_locations:
-  - [5, 2] # Goal task 0
-  - [1, 1] # Goal task 1
-
-# === TASK DETERMINISTICI FORZATI ===
-# Verranno eseguiti solo usando il flag -not_rand
+    - [5, 3]
+    - [3, 5]
+agents:
+  - name: agent_0
+    start: [1, 3]
+    goal: [5, 3]
+  - name: agent_1
+    start: [3, 1]
+    goal: [3, 5]
 tasks:
   - task_name: task0
-    start: [1, 2]
-    goal: [5, 2]
+    start: [1, 3]
+    goal: [5, 3]
     start_time: 0
   - task_name: task1
-    start: [5, 1]
-    goal: [1, 1]
-    start_time: 15
-
+    start: [3, 1]
+    goal: [3, 5]
+    start_time: 0
 delays: {}
-
-n_tasks: 2                
-task_freq: 0.5            
-n_delays_per_agent: 0

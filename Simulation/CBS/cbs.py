@@ -178,10 +178,14 @@ class Environment(object):
                 if l_prime.to_tuple() in self.obstacles:
                     continue
                 if (l_prime.x, l_prime.y, state.time + 1) in self.moving_obstacles:
-                    continue
+                    entity = self.moving_obstacles[(l_prime.x, l_prime.y, state.time + 1)]
+                    if not entity.startswith("obs_"):
+                        continue
                 if (state.location.x, state.location.y, state.time + 1) in self.moving_obstacles and (l_prime.x, l_prime.y, state.time) in self.moving_obstacles:
                     if self.moving_obstacles[(state.location.x, state.location.y, state.time + 1)] == self.moving_obstacles[(l_prime.x, l_prime.y, state.time)]:
-                        continue
+                        entity = self.moving_obstacles[(state.location.x, state.location.y, state.time + 1)]
+                        if not entity.startswith("obs_"):
+                            continue
                 collision_idle = False
                 for (ox, oy, ot), name in self.moving_obstacles.items():
                     if ot < 0: 
@@ -219,12 +223,14 @@ class Environment(object):
                         continue
                     if not (0 <= l_obs_prime[0] < self.dimension[0] and 0 <= l_obs_prime[1] < self.dimension[1]):
                         continue
-                    if l_obs_prime in self.obstacles or l_obs_prime in self.v_ep:
+                    if l_obs_prime in self.obstacles:
                         continue
                     if l_obs_prime == state.location.to_tuple():
                         continue
                     if (l_obs_prime[0], l_obs_prime[1], state.time) in self.moving_obstacles:
-                        continue
+                        entity = self.moving_obstacles[(l_obs_prime[0], l_obs_prime[1], state.time)]
+                        if not entity.startswith("obs_"):
+                            continue
                     collision_idle = False
                     for (ox, oy, ot), name in self.moving_obstacles.items():
                         if ot < 0: 
@@ -245,12 +251,12 @@ class Environment(object):
                         new_p = state.p + 1
                         new_delta_fs = frozenset(new_delta.items())
                         if not rest_to_move:
-                            if not hasattr(self, 'wf_cache'):
-                                self.wf_cache = {}
-                            if new_delta_fs not in self.wf_cache:
-                                self.wf_cache[new_delta_fs] = self.is_well_formed(new_delta)
-                            if not self.wf_cache[new_delta_fs]:
-                                continue
+                            # if not hasattr(self, 'wf_cache'):
+                            #     self.wf_cache = {}
+                            # if new_delta_fs not in self.wf_cache:
+                            #     self.wf_cache[new_delta_fs] = self.is_well_formed(new_delta)
+                            # if not self.wf_cache[new_delta_fs]:
+                            #     continue
                             if l_obs_prime != target_agent:
                                 new_state = State(time=state.time + 1, location=Location(target_agent[0], target_agent[1]), delta_o=new_delta_fs, p=new_p, to_move=())
                             else:
@@ -264,7 +270,7 @@ class Environment(object):
                         new_to_move = ((blocking_obs_id, l_obs_prime), (obs_id, target_agent)) + tuple(rest_to_move)
                         new_state = State(time=state.time, location=state.location, delta_o=state.delta_o, p=state.p, to_move=new_to_move)
                         neighbors.append(new_state)
-        return neighbors
+        return [n for n in neighbors if self.state_valid(n)]
     
     def get_valid_parking_spots(self, obs_id, delta_o):
         l_init = [k for k, v in self.movable_obstacles_map.items() if v == obs_id][0]
@@ -351,25 +357,32 @@ class Environment(object):
             return False
         if state.location.to_tuple() in self.obstacles:
             return False
-        curr_delta = dict(state.delta_o)
-        for obs_id, trajectory in curr_delta.items():
-            if state.time < len(trajectory):
-                if state.location.to_tuple() == tuple(trajectory[state.time]):
-                    return False
-            else:
-                if state.location.to_tuple() == tuple(trajectory[-1]):
-                    return False
-
-        # 4. Controllo collisioni con ostacoli mobili NON ancora spostati
-        # Se un ostacolo non è in delta_o, significa che è ancora fermo alla sua posizione originale
-        for loc, obs_id in self.movable_obstacles_map.items():
-            if obs_id not in curr_delta:
-                if state.location.to_tuple() == loc:
-                    return False
-
-        # 5. Controllo vincoli del CBS (altri agenti)
+        if self.get_obstacle_at(state.location, state.delta_o, time=state.time) is not None:
+            return False
         if VertexConstraint(state.time, state.location) in self.constraints.vertex_constraints:
             return False
+        # curr_delta = dict(state.delta_o)
+        # for obs_id, obs_pos in curr_delta.items():
+        #     if obs_pos == state.location.to_tuple():
+        #         return False
+        # # for obs_id, trajectory in curr_delta.items():
+        # #     if state.time < len(trajectory):
+        # #         if state.location.to_tuple() == tuple(trajectory[state.time]):
+        # #             return False
+        # #     else:
+        # #         if state.location.to_tuple() == tuple(trajectory[-1]):
+        # #             return False
+
+        # # 4. Controllo collisioni con ostacoli mobili NON ancora spostati
+        # # Se un ostacolo non è in delta_o, significa che è ancora fermo alla sua posizione originale
+        # for loc, obs_id in self.movable_obstacles_map.items():
+        #     if obs_id not in curr_delta:
+        #         if state.location.to_tuple() == loc:
+        #             return False
+
+        # # 5. Controllo vincoli del CBS (altri agenti)
+        # if VertexConstraint(state.time, state.location) in self.constraints.vertex_constraints:
+        #     return False
             
         return True
 
