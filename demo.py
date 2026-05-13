@@ -25,6 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('-not_rand', help='Use if input has fixed tasks and delays', action='store_true')
     parser.add_argument('-radius', help="Terraforming radius (Radius k)", default=1, type=int)
     parser.add_argument('-alpha', help="Weight alpha", default=100, type=float)
+    parser.add_argument('-laziness', help="Laziness of the radar (number of steps it can take in a single time step)", default=1, type=int)
 
     args = parser.parse_args()
 
@@ -68,13 +69,30 @@ if __name__ == '__main__':
     tp = TokenPassingRecovery(agents, dimensions, obstacles, non_task_endpoints, simulation,
                               a_star_max_iter=args.a_star_max_iter, k=args.k,
                               replan_every_k_delays=False, pd=args.pd, p_max=args.p, p_iter=args.p_iter, terraforming_radius=args.radius,
-                              new_recovery=True, movable_obstacles=movable_obstacles, alpha=args.alpha)
+                              new_recovery=True, movable_obstacles=movable_obstacles, alpha=args.alpha, laziness=args.laziness)
     while tp.get_completed_tasks() != len(tasks):
         simulation.time_forward(tp)
 
-    cost = 0
-    for path in simulation.actual_paths.values():
-        cost = cost + len(path)
+    agent_cost = 0
+    p_total = 0
+
+    
+    for agent_name, path in simulation.actual_paths.items():
+        if len(path) > 1:
+            final_pos = (path[-1]['x'], path[-1]['y'])
+            t_cost = 0
+            for step in path:
+                if step['x'] != final_pos[0] or step['y'] != final_pos[1]:
+                    t_cost = step['t'] + 1
+            agent_cost += t_cost
+
+    
+    for obs_id, path in tp.get_token()['obstacles_paths'].items():
+        for i in range(1, len(path)):
+            if path[i]['x'] != path[i-1]['x'] or path[i]['y'] != path[i-1]['y']:
+                p_total += 1
+                
+    cost = agent_cost + (tp.alpha * p_total)
     combined_schedule = simulation.actual_paths.copy()
     max_time = simulation.get_time()
     cleaned_obs_paths = {}

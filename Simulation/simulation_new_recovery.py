@@ -180,9 +180,25 @@ if __name__ == '__main__':
     while tp.get_completed_tasks() != len(tasks):
         simulation.time_forward(tp)
 
-    cost = 0
-    for path in simulation.actual_paths.values():
-        cost = cost + len(path)
+    agent_cost = 0
+    p_total = 0
+
+    for entity_name, path in simulation.actual_paths.items():
+        if not entity_name.startswith("obs_"):
+            if len(path) > 1:
+                final_pos = (path[-1]['x'], path[-1]['y'])
+                t_cost = 0
+                for step in path:
+                    if step['x'] != final_pos[0] or step['y'] != final_pos[1]:
+                        t_cost = step['t'] + 1
+                agent_cost += t_cost
+        else:
+            for i in range(1, len(path)):
+                if path[i]['x'] != path[i-1]['x'] or path[i]['y'] != path[i-1]['y']:
+                    p_total += 1
+                    
+    cost = agent_cost + (tp.alpha * p_total)
+
     obstacles_paths = tp.get_token()['obstacles_paths']
     max_time = simulation.get_time()
     for obs_id, path in obstacles_paths.items():

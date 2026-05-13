@@ -11,8 +11,9 @@ from collections import defaultdict
 
 class TokenPassingRecovery(object):
     def __init__(self, agents, dimesions, obstacles, non_task_endpoints, simulation, a_star_max_iter=4000, k=0,
-                 replan_every_k_delays=False, pd=None, p_max=1, p_iter=1, new_recovery=False, movable_obstacles=None, alpha=0.5, terraforming_radius=3):
+                 replan_every_k_delays=False, pd=None, p_max=1, p_iter=1, new_recovery=False, movable_obstacles=None, alpha=0.5, terraforming_radius=3, laziness=5):
         self.agents = agents
+        self.laziness = laziness
         self.dimensions = dimesions
         self.obstacles = set(tuple(o) for o in obstacles)
         self.movable_obstacles = set(tuple(o) for o in (movable_obstacles or []))
@@ -211,22 +212,31 @@ class TokenPassingRecovery(object):
                     # Mark last element with negative time to later turn it into idle obstacle
                     if i == len(path) - 1:
                         obstacles[(path[i][0], path[i][1], -k)] = name
+        
+        def get_obs_pos_at(path, target_t):
+            valid_steps = [s for s in path if s['t'] <= target_t]
+            if not valid_steps:
+                return (path[0]['x'], path[0]['y']) if path else (0,0)
+            best = max(valid_steps, key=lambda s: s['t'])
+            return (best['x'], best['y'])
+
         for obs_id, path in self.token['obstacles_paths'].items():
-            base_pos = path[0]
-            for step in path:
-                if step['t'] <= base_time:
-                    base_pos = step
-                else:
-                    break
-            for step in path:
-                if step['t'] >= abs_time_start:
-                    relative_t = step['t'] -abs_time_start
-                    if step['x'] != base_pos['x'] or step['y'] != base_pos['y']:
-                        obstacles[(step['x'], step['y'], relative_t)] = obs_id
+            if not path:
+                continue
+            max_t = max(step['t'] for step in path)
+            for t in range(abs_time_start, max_t + 2):
+                curr_pos = get_obs_pos_at(path, t)
+                prev_pos = get_obs_pos_at(path, t - 1)
+                next_pos = get_obs_pos_at(path, t + 1)
+                
+                if curr_pos != prev_pos or curr_pos != next_pos:
+                    relative_t = t - abs_time_start
+                    if relative_t >= 0:
+                        obstacles[(curr_pos[0], curr_pos[1], relative_t)] = obs_id
                         for j in range(1, self.k + 1):
                             if relative_t - j >= 0:
-                                obstacles[(step['x'], step['y'], relative_t - j)] = obs_id
-                            obstacles[(step['x'], step['y'], relative_t + j)] = obs_id
+                                obstacles[(curr_pos[0], curr_pos[1], relative_t - j)] = obs_id
+                            obstacles[(curr_pos[0], curr_pos[1], relative_t + j)] = obs_id
         return obstacles
 
     def get_idle_obstacles_agents(self, agents_paths, delayed_agents, time_start):
@@ -333,7 +343,7 @@ class TokenPassingRecovery(object):
         idle_obstacles_agents = self.get_idle_obstacles_agents(all_idle_agents.values(), all_delayed_agents, 0)
         agent = {'name': agent_name, 'start': agent_pos, 'goal': closest_non_task_endpoint}
         env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents, moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), v_ep=self.v_ep,
-                          a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles)
+                          a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles, laziness=self.laziness)
         cbs = CBS(env)
         result = self.search(cbs, agent_name, moving_obstacles_agents)
         if not result:
@@ -369,7 +379,7 @@ class TokenPassingRecovery(object):
             idle_obstacles_agents = self.get_idle_obstacles_agents(all_idle_agents.values(), all_delayed_agents, 0)
             agent = {'name': agent_name, 'start': agent_pos, 'goal': random_close_cell}
             env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents, moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), v_ep=self.v_ep,
-                              a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles)
+                              a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles, laziness=self.laziness)
             cbs = CBS(env)
             result = self.search(cbs, agent_name, moving_obstacles_agents)
             if not result:
@@ -513,7 +523,7 @@ class TokenPassingRecovery(object):
                 idle_obstacles_agents = self.get_idle_obstacles_agents(all_idle_agents.values(), all_delayed_agents, 0)
                 agent = {'name': agent_name, 'start': agent_pos, 'goal': closest_task[0]}
                 env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents,
-                                  moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles)
+                                  moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles, laziness=self.laziness)
                 cbs = CBS(env)
                 result_start = self.search(cbs, agent_name, moving_obstacles_agents)
                 if not result_start:
@@ -526,7 +536,9 @@ class TokenPassingRecovery(object):
                     path_to_task_start = result_start['agents']
                     start_obs_trajectories = result_start['obstacles']
                     print("Solution found to task start for agent", agent_name, " searching solution to task goal...")
-                    cost1 = env.compute_solution_cost(path_to_task_start)
+                    
+                    cost1 = len(path_to_task_start[agent_name])
+                    
                     # Use cost - 1 because idle cost is 1
                     moving_obstacles_agents = self.get_moving_obstacles_agents(self.token['agents'], cost1 - 1)
                     idle_obstacles_agents = self.get_idle_obstacles_agents(all_idle_agents.values(), all_delayed_agents,
@@ -549,7 +561,7 @@ class TokenPassingRecovery(object):
                             updated_obs_pos[obs_id] = rel_path
                     agent = {'name': agent_name, 'start': closest_task[0], 'goal': closest_task[1]}
                     env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents,
-                                      moving_obstacles_agents, movable_obstacles=updated_obs_pos, v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles)
+                                      moving_obstacles_agents, movable_obstacles=updated_obs_pos, v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles, laziness=self.laziness)
                     cbs = CBS(env)
                     result_goal = self.search(cbs, agent_name, moving_obstacles_agents)
                     if not result_goal:
@@ -562,7 +574,9 @@ class TokenPassingRecovery(object):
                         print("Solution found to task goal for agent", agent_name, " doing task...")
                         path_to_task_goal = result_goal['agents']
                         goal_obs_trajectories = result_goal['obstacles']
-                        cost2 = env.compute_solution_cost(path_to_task_goal)
+                        
+                        cost2 = len(path_to_task_goal[agent_name])
+                        
                         current_sim_time = self.simulation.get_time()
                         base_time = current_sim_time - 1
                         for obs_id, traj in start_obs_trajectories.items():

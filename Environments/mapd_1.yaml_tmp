@@ -1,17 +1,17 @@
 agents:
 - goal:
+  - 2
   - 5
-  - 3
   name: agent0
   start:
+  - 2
   - 1
-  - 3
 - goal:
-  - 3
+  - 5
   - 5
   name: agent1
   start:
-  - 3
+  - 5
   - 1
 delays: {}
 map:
@@ -19,77 +19,53 @@ map:
   - 7
   - 7
   goal_locations:
+  - - 2
+    - 5
   - - 5
-    - 3
-  - - 3
     - 5
   movable_obstacles:
-  - - 3
+  - - 2
     - 3
   non_task_endpoints:
-  - - 1
-    - 3
-  - - 5
-    - 3
-  - - 3
-    - 1
-  - - 3
-    - 5
+  - - 0
+    - 0
+  - - 6
+    - 6
   obstacles:
   - - 1
-    - 1
-  - - 2
-    - 1
-  - - 1
     - 2
-  - - 2
-    - 2
-  - - 4
-    - 1
-  - - 5
-    - 1
-  - - 4
-    - 2
-  - - 5
-    - 2
-  - - 1
-    - 4
-  - - 2
-    - 4
-  - - 1
-    - 5
-  - - 2
-    - 5
-  - - 4
-    - 4
-  - - 5
-    - 4
-  - - 4
-    - 5
-  - - 5
-    - 5
-  start_locations:
   - - 1
     - 3
+  - - 1
+    - 4
   - - 3
+    - 2
+  - - 3
+    - 3
+  - - 3
+    - 4
+  start_locations:
+  - - 2
+    - 1
+  - - 5
     - 1
 n_delays_per_agent: 0
 n_tasks: 2
 task_freq: 10
 tasks:
 - goal:
+  - 2
   - 5
-  - 3
   start:
+  - 2
   - 1
-  - 3
   start_time: 0
   task_name: task0
 - goal:
-  - 3
+  - 5
   - 5
   start:
-  - 3
+  - 5
   - 1
   start_time: 0
   task_name: task1

@@ -1,10 +1,10 @@
 completed_tasks_times:
   task0: 5
-  task1: 6
-cost: 14
+  task1: 8
+cost: 14.0
 n_replans: 0
 schedule:
-  agent_0:
+  agent0:
   - t: 0
     x: 1
     y: 3
@@ -26,7 +26,13 @@ schedule:
   - t: 6
     x: 5
     y: 3
-  agent_1:
+  - t: 7
+    x: 5
+    y: 3
+  - t: 8
+    x: 5
+    y: 3
+  agent1:
   - t: 0
     x: 3
     y: 1
@@ -38,14 +44,20 @@ schedule:
     y: 2
   - t: 3
     x: 3
-    y: 3
+    y: 2
   - t: 4
     x: 3
-    y: 4
+    y: 2
   - t: 5
     x: 3
-    y: 5
+    y: 3
   - t: 6
+    x: 3
+    y: 4
+  - t: 7
+    x: 3
+    y: 5
+  - t: 8
     x: 3
     y: 5
   obs_0:
@@ -54,7 +66,7 @@ schedule:
     y: 3
   - t: 1
     x: 3
-    y: 3
+    y: 4
   - t: 2
     x: 3
     y: 4
@@ -63,10 +75,16 @@ schedule:
     y: 4
   - t: 4
     x: 3
-    y: 5
+    y: 3
   - t: 5
-    x: 3
-    y: 6
+    x: 4
+    y: 3
   - t: 6
-    x: 3
-    y: 6
+    x: 4
+    y: 3
+  - t: 7
+    x: 4
+    y: 3
+  - t: 8
+    x: 4
+    y: 3
