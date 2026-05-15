@@ -17,9 +17,9 @@ class AStar:
         self.get_neighbors = env.get_neighbors
         self.max_iter = env.a_star_max_iter
         self.iter = 0
-        max_path_length = env.dimension[0] * env.dimension[1]
-        min_cost = min(1.0, env.alpha) if env.alpha > 0 else 1.0
-        self.bonus_weight = (min_cost * 0.99) / max_path_length
+        # max_path_length = env.dimension[0] * env.dimension[1]
+        # min_cost = min(1.0, env.alpha) if env.alpha > 0 else 1.0
+        # self.bonus_weight = (min_cost * 0.99) / max_path_length
 
     def reconstruct_path(self, came_from, current):
         total_path = [current]
@@ -59,10 +59,11 @@ class AStar:
             self.iter = self.iter + 1
             
             current_f, _, _, _, current = heapq.heappop(heap)
-            
-            if current_f > upper_bound:
+            physical_f = current_f - (self.env.alpha * current.w)
+
+            if physical_f > upper_bound:
                 continue
-            
+                        
             current_g = self.env.calculate_g(current)
             base_key = (current.location.to_tuple(), current.time, current.to_move)
             is_dominated = False
@@ -92,7 +93,7 @@ class AStar:
                     g_score[neighbor] = tentative_g_score
                     bonus_score[neighbor] = neighbor.lookahead_bonus
                     base_h = self.admissible_heuristic(neighbor, agent_name)
-                    f_score = tentative_g_score + base_h - (neighbor.lookahead_bonus * self.bonus_weight)
+                    f_score = tentative_g_score + base_h #- (neighbor.lookahead_bonus * self.bonus_weight)
                     
                     heapq.heappush(heap, (f_score, -neighbor.lookahead_bonus, base_h, next(index), neighbor))
                 print('Low level A* - Maximum iteration reached')

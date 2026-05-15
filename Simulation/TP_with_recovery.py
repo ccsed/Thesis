@@ -342,7 +342,7 @@ class TokenPassingRecovery(object):
         moving_obstacles_agents = self.get_moving_obstacles_agents(self.token['agents'], 0)
         idle_obstacles_agents = self.get_idle_obstacles_agents(all_idle_agents.values(), all_delayed_agents, 0)
         agent = {'name': agent_name, 'start': agent_pos, 'goal': closest_non_task_endpoint}
-        env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents, moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), v_ep=self.v_ep,
+        env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents, moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), original_obs_pos=self.token['original_obs_pos'], v_ep=self.v_ep,
                           a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles, laziness=self.laziness)
         cbs = CBS(env)
         result = self.search(cbs, agent_name, moving_obstacles_agents)
@@ -378,7 +378,7 @@ class TokenPassingRecovery(object):
             moving_obstacles_agents = self.get_moving_obstacles_agents(self.token['agents'], 0)
             idle_obstacles_agents = self.get_idle_obstacles_agents(all_idle_agents.values(), all_delayed_agents, 0)
             agent = {'name': agent_name, 'start': agent_pos, 'goal': random_close_cell}
-            env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents, moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), v_ep=self.v_ep,
+            env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents, moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), original_obs_pos=self.token['original_obs_pos'], v_ep=self.v_ep,
                               a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles, laziness=self.laziness)
             cbs = CBS(env)
             result = self.search(cbs, agent_name, moving_obstacles_agents)
@@ -523,7 +523,7 @@ class TokenPassingRecovery(object):
                 idle_obstacles_agents = self.get_idle_obstacles_agents(all_idle_agents.values(), all_delayed_agents, 0)
                 agent = {'name': agent_name, 'start': agent_pos, 'goal': closest_task[0]}
                 env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents,
-                                  moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles, laziness=self.laziness)
+                                  moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), original_obs_pos=self.token['original_obs_pos'], v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles, laziness=self.laziness)
                 cbs = CBS(env)
                 result_start = self.search(cbs, agent_name, moving_obstacles_agents)
                 if not result_start:
@@ -561,7 +561,7 @@ class TokenPassingRecovery(object):
                             updated_obs_pos[obs_id] = rel_path
                     agent = {'name': agent_name, 'start': closest_task[0], 'goal': closest_task[1]}
                     env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents,
-                                      moving_obstacles_agents, movable_obstacles=updated_obs_pos, v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles, laziness=self.laziness)
+                                      moving_obstacles_agents, movable_obstacles=updated_obs_pos, original_obs_pos=self.token['original_obs_pos'], v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles, laziness=self.laziness)
                     cbs = CBS(env)
                     result_goal = self.search(cbs, agent_name, moving_obstacles_agents)
                     if not result_goal:

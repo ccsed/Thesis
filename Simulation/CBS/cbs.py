@@ -107,7 +107,7 @@ class Constraints(object):
             "EC: " + str([str(ec) for ec in self.edge_constraints])
 
 class Environment(object):
-    def __init__(self, dimension, agents, obstacles, moving_obstacles=None, movable_obstacles=None, v_ep=None, a_star_max_iter=-1, alpha=100, terraforming_radius=3, static_obstacles=None, laziness=5):
+    def __init__(self, dimension, agents, obstacles, moving_obstacles=None, movable_obstacles=None, original_obs_pos=None, v_ep=None, a_star_max_iter=-1, alpha=100, terraforming_radius=3, static_obstacles=None, laziness=5):
         if moving_obstacles is None:
             moving_obstacles = []
         self.laziness = laziness
@@ -139,7 +139,11 @@ class Environment(object):
         self.constraint_dict = {}
 
         self.a_star = AStar(self)
-        self.obs_id_to_init_loc = {v: k for k, v in self.movable_obstacles_map.items()}
+        self.obs_id_to_init_loc = {}
+        if original_obs_pos:
+            self.obs_id_to_init_loc = original_obs_pos
+        else:
+            self.obs_id_to_init_loc = {v: k for k, v in self.movable_obstacles_map.items()}
 
     def get_obstacle_at(self, location, delta_o, time=None):
         loc_tuple = location.to_tuple()
@@ -209,7 +213,7 @@ class Environment(object):
                             best_h = float('inf')
                             for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
                                 nx, ny = cursor[0] + dx, cursor[1] + dy
-                                if 0 <= nx < self.dimension[0] and 0 <= ny < self.dimension[1] and (nx, ny) not in self.obstacles:
+                                if 0 <= nx < self.dimension[0] and 0 <= ny < self.dimension[1] and (nx, ny) not in self.obstacles and (nx, ny, state.time + step) not in self.moving_obstacles:
                                     h_val = self.admissible_heuristic(State(0, Location(nx, ny)), agent_name)
                                     if h_val < best_h:
                                         best_h = h_val
