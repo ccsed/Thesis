@@ -1,0 +1,965 @@
+{
+    "baselines_params_sweep": {
+        "LB": {
+            "makespan": 111.56,
+            "service_time": 6.864
+        },
+        "UB": {
+            "makespan": null,
+            "service_time": null
+        }
+    },
+    "baselines_scale_sweep": {
+        "N_Agents": {
+            "lb_ms": [
+                216.28,
+                141.0,
+                138.64,
+                137.04,
+                177.88
+            ],
+            "lb_st": [
+                6.756,
+                6.79,
+                6.94,
+                7.127999999999999,
+                6.846
+            ],
+            "ub_ms": [
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN
+            ],
+            "ub_st": [
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN
+            ]
+        },
+        "N_Tasks": {
+            "lb_ms": [
+                75.0,
+                141.0,
+                194.76,
+                300.8,
+                455.68,
+                554.6
+            ],
+            "lb_st": [
+                6.276,
+                6.79,
+                6.798666666666667,
+                6.716000000000001,
+                6.727499999999999,
+                6.684
+            ],
+            "ub_ms": [
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN
+            ],
+            "ub_st": [
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN,
+                NaN
+            ]
+        }
+    },
+    "scenario_params": {
+        "alpha": 0.1,
+        "radius": 3,
+        "laziness": 5
+    },
+    "Alpha": {
+        "values": [
+            0.1,
+            0.5,
+            1.0,
+            5.0,
+            10,
+            20,
+            100
+        ],
+        "base_settings": {
+            "alpha": 0.1,
+            "radius": 3,
+            "laziness": 5
+        },
+        "avg_service_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_service_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_makespan": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_makespan": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_sim_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_sim_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_terraforming_cost": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_terraforming_cost": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "raw_data": {
+            "0.1": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "0.5": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "1.0": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "5.0": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "10": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "20": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "100": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            }
+        }
+    },
+    "Radius": {
+        "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ],
+        "base_settings": {
+            "alpha": 0.1,
+            "radius": 3,
+            "laziness": 5
+        },
+        "avg_service_time": [
+            NaN,
+            NaN,
+            NaN,
+            7.01,
+            6.995999999999999,
+            6.991999999999999
+        ],
+        "std_service_time": [
+            NaN,
+            NaN,
+            NaN,
+            0.9993998198919188,
+            0.990345394294334,
+            0.9967627601390412
+        ],
+        "avg_makespan": [
+            NaN,
+            NaN,
+            NaN,
+            111.64,
+            111.28,
+            111.28
+        ],
+        "std_makespan": [
+            NaN,
+            NaN,
+            NaN,
+            23.41944491229457,
+            23.235352375206194,
+            23.235352375206194
+        ],
+        "avg_sim_time": [
+            NaN,
+            NaN,
+            NaN,
+            0.1572269344329834,
+            0.1895191764831543,
+            0.2774499034881592
+        ],
+        "std_sim_time": [
+            NaN,
+            NaN,
+            NaN,
+            0.04287010052853156,
+            0.10860070125687303,
+            0.22337767190138322
+        ],
+        "avg_terraforming_cost": [
+            NaN,
+            NaN,
+            NaN,
+            0.528,
+            0.48400000000000004,
+            0.488
+        ],
+        "std_terraforming_cost": [
+            NaN,
+            NaN,
+            NaN,
+            0.09600000000000004,
+            0.07310266752998827,
+            0.07652450587883598
+        ],
+        "raw_data": {
+            "1": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "2": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "3": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "4": {
+                "service_times": [
+                    7.05,
+                    6.45,
+                    7.35,
+                    5.35,
+                    6.45,
+                    7.55,
+                    8.85,
+                    7.25,
+                    7.15,
+                    6.15,
+                    9.2,
+                    7.1,
+                    6.7,
+                    5.35,
+                    7.15,
+                    7.6,
+                    6.9,
+                    5.65,
+                    6.55,
+                    6.35,
+                    6.45,
+                    7.8,
+                    7.05,
+                    6.5,
+                    9.3
+                ],
+                "makespans": [
+                    101,
+                    87,
+                    133,
+                    88,
+                    120,
+                    91,
+                    158,
+                    124,
+                    123,
+                    92,
+                    160,
+                    111,
+                    97,
+                    86,
+                    99,
+                    106,
+                    137,
+                    82,
+                    117,
+                    94,
+                    94,
+                    104,
+                    95,
+                    132,
+                    160
+                ],
+                "sim_times": [
+                    0.12842869758605957,
+                    0.11288833618164062,
+                    0.20807552337646484,
+                    0.2048778533935547,
+                    0.14423847198486328,
+                    0.13050389289855957,
+                    0.14952802658081055,
+                    0.1729109287261963,
+                    0.10618329048156738,
+                    0.11476659774780273,
+                    0.13120317459106445,
+                    0.21905875205993652,
+                    0.14727568626403809,
+                    0.21679329872131348,
+                    0.10960626602172852,
+                    0.16202640533447266,
+                    0.2875192165374756,
+                    0.1192924976348877,
+                    0.15205025672912598,
+                    0.12680673599243164,
+                    0.15132975578308105,
+                    0.15292835235595703,
+                    0.20272159576416016,
+                    0.1488938331604004,
+                    0.1307659149169922
+                ],
+                "terraforming_costs": [
+                    0.6000000000000001,
+                    0.6000000000000001,
+                    0.6000000000000001,
+                    0.6000000000000001,
+                    0.4,
+                    0.6000000000000001,
+                    0.6000000000000001,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.6000000000000001,
+                    0.4,
+                    0.4,
+                    0.6000000000000001,
+                    0.6000000000000001,
+                    0.4,
+                    0.6000000000000001,
+                    0.6000000000000001,
+                    0.4,
+                    0.6000000000000001,
+                    0.6000000000000001,
+                    0.6000000000000001,
+                    0.6000000000000001,
+                    0.4,
+                    0.6000000000000001
+                ]
+            },
+            "5": {
+                "service_times": [
+                    7.05,
+                    6.45,
+                    7.35,
+                    5.45,
+                    6.45,
+                    7.55,
+                    8.8,
+                    7.25,
+                    7.15,
+                    6.15,
+                    9.2,
+                    7.1,
+                    6.5,
+                    5.25,
+                    7.15,
+                    7.6,
+                    6.9,
+                    5.65,
+                    6.55,
+                    6.35,
+                    6.45,
+                    7.8,
+                    7.05,
+                    6.5,
+                    9.2
+                ],
+                "makespans": [
+                    101,
+                    87,
+                    133,
+                    88,
+                    120,
+                    91,
+                    157,
+                    124,
+                    123,
+                    92,
+                    160,
+                    111,
+                    91,
+                    87,
+                    99,
+                    106,
+                    137,
+                    82,
+                    117,
+                    94,
+                    94,
+                    104,
+                    95,
+                    132,
+                    157
+                ],
+                "sim_times": [
+                    0.12571978569030762,
+                    0.11547064781188965,
+                    0.44983506202697754,
+                    0.2037351131439209,
+                    0.12716364860534668,
+                    0.12564492225646973,
+                    0.14289522171020508,
+                    0.1697700023651123,
+                    0.12359619140625,
+                    0.10730934143066406,
+                    0.165971040725708,
+                    0.22495317459106445,
+                    0.1760566234588623,
+                    0.20176172256469727,
+                    0.11284995079040527,
+                    0.17460298538208008,
+                    0.5613505840301514,
+                    0.11904406547546387,
+                    0.15915536880493164,
+                    0.12591171264648438,
+                    0.1817471981048584,
+                    0.1904442310333252,
+                    0.3733534812927246,
+                    0.15506482124328613,
+                    0.1245725154876709
+                ],
+                "terraforming_costs": [
+                    0.5,
+                    0.5,
+                    0.7000000000000001,
+                    0.5,
+                    0.4,
+                    0.5,
+                    0.5,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.5,
+                    0.4,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.4,
+                    0.5,
+                    0.6000000000000001,
+                    0.4,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.6000000000000001,
+                    0.4,
+                    0.5
+                ]
+            },
+            "6": {
+                "service_times": [
+                    7.05,
+                    6.45,
+                    7.35,
+                    5.35,
+                    6.45,
+                    7.55,
+                    8.8,
+                    7.25,
+                    7.15,
+                    6.15,
+                    9.2,
+                    7.1,
+                    6.5,
+                    5.25,
+                    7.15,
+                    7.6,
+                    6.9,
+                    5.65,
+                    6.55,
+                    6.35,
+                    6.45,
+                    7.8,
+                    7.05,
+                    6.5,
+                    9.2
+                ],
+                "makespans": [
+                    101,
+                    87,
+                    133,
+                    88,
+                    120,
+                    91,
+                    157,
+                    124,
+                    123,
+                    92,
+                    160,
+                    111,
+                    91,
+                    87,
+                    99,
+                    106,
+                    137,
+                    82,
+                    117,
+                    94,
+                    94,
+                    104,
+                    95,
+                    132,
+                    157
+                ],
+                "sim_times": [
+                    0.16872668266296387,
+                    0.1604321002960205,
+                    0.7646498680114746,
+                    0.3074955940246582,
+                    0.2033243179321289,
+                    0.20317554473876953,
+                    0.21318340301513672,
+                    0.2557075023651123,
+                    0.1830761432647705,
+                    0.18112468719482422,
+                    0.25334787368774414,
+                    0.3164181709289551,
+                    0.23188567161560059,
+                    0.2632768154144287,
+                    0.15010333061218262,
+                    0.2160952091217041,
+                    1.0910923480987549,
+                    0.13640832901000977,
+                    0.18532538414001465,
+                    0.1247870922088623,
+                    0.1734921932220459,
+                    0.18317866325378418,
+                    0.6744701862335205,
+                    0.1681222915649414,
+                    0.1273481845855713
+                ],
+                "terraforming_costs": [
+                    0.5,
+                    0.5,
+                    0.7000000000000001,
+                    0.6000000000000001,
+                    0.4,
+                    0.5,
+                    0.5,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.5,
+                    0.4,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.4,
+                    0.5,
+                    0.6000000000000001,
+                    0.4,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.6000000000000001,
+                    0.4,
+                    0.5
+                ]
+            }
+        }
+    },
+    "Laziness": {
+        "values": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ],
+        "base_settings": {
+            "alpha": 0.1,
+            "radius": 3,
+            "laziness": 5
+        },
+        "avg_service_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_service_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_makespan": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_makespan": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_sim_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_sim_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_terraforming_cost": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_terraforming_cost": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "raw_data": {
+            "1": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "2": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "3": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "4": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "5": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            }
+        }
+    },
+    "N_Agents": {
+        "values": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ],
+        "base_settings": {
+            "alpha": 0.1,
+            "radius": 3,
+            "laziness": 5
+        },
+        "avg_service_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_service_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_makespan": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_makespan": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_sim_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_sim_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_terraforming_cost": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_terraforming_cost": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "raw_data": {
+            "1": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "2": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "3": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "4": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "5": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            }
+        }
+    },
+    "N_Tasks": {
+        "values": [
+            10,
+            20,
+            30,
+            50,
+            80,
+            100
+        ],
+        "base_settings": {
+            "alpha": 0.1,
+            "radius": 3,
+            "laziness": 5
+        },
+        "avg_service_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_service_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_makespan": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_makespan": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_sim_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_sim_time": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "avg_terraforming_cost": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "std_terraforming_cost": [
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN
+        ],
+        "raw_data": {
+            "10": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "20": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "30": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "50": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "80": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            },
+            "100": {
+                "service_times": [],
+                "makespans": [],
+                "sim_times": [],
+                "terraforming_costs": []
+            }
+        }
+    }
+}

@@ -41,6 +41,11 @@ class AStar:
 
     def _run_search(self, agent_name, allow_terraforming=True, upper_bound=float('inf')):
         initial_state = self.agent_dict[agent_name]["start"]
+        # DEBUG VINCOLI CBS
+        # if agent_name == 'agent0':
+        #     print(f"\n--- INIZIO RICERCA PER AGENT0 ---")
+        #     print(f"Vincoli di Vertice attivi: {[str(vc) for vc in self.env.constraints.vertex_constraints]}")
+        #     print(f"Vincoli di Bordo attivi: {[str(ec) for ec in self.env.constraints.edge_constraints]}")
         step_cost = 1
         closed_set = defaultdict(list)
         came_from = {}
@@ -57,12 +62,27 @@ class AStar:
         index = count(0)
         # NUOVO: Aggiungiamo initial_state.w come 3° elemento della tupla
         heapq.heappush(heap, (g_score[initial_state] + h_score, 0, initial_state.w, h_score, next(index), initial_state))
-
+        # DEBUG VARS
+        normal_expanded = 0
+        intermediate_expanded = 0
+        max_closed_set_bucket = 0
         while heap and (self.max_iter == -1 or self.iter < self.max_iter):
             self.iter = self.iter + 1
             
             # NUOVO: Aggiunto un '_' per spacchettare correttamente la tupla a 6 elementi
             current_f, _, _, _, _, current = heapq.heappop(heap)
+            # DEBUG ESTRAZIONE HEAP
+            # if agent_name == 'agent0':
+            #     loc = current.location.to_tuple()
+            #     # Filtriamo solo le celle cruciali per non intasare il terminale
+            #     if loc in [(4,2), (4,3), (4,4), (5,2)]:
+            #         curr_g = self.env.calculate_g(current)
+            #         curr_h = self.admissible_heuristic(current, agent_name)
+            #         print(f"[A* POP] Tempo: {current.time} | Pos: {loc} | Intermedio: {current.is_intermidiate()} | f={current_f:.2f} (g={curr_g:.2f}, h={curr_h:.2f})")
+            if current.is_intermidiate():
+                intermediate_expanded += 1
+            else:
+                normal_expanded += 1
             
             # NUOVO: f è già pura! Non serve sottrarre nulla.
             physical_f = current_f - (self.env.alpha * current.w)
@@ -101,10 +121,13 @@ class AStar:
                 continue
                 
             closed_set[base_key].append((current.delta_o, current.p, current_g, current.lookahead_bonus))
+            bucket_size = len(closed_set[base_key])
+            if bucket_size > max_closed_set_bucket:
+                max_closed_set_bucket = bucket_size
             
             if self.is_at_goal(current, agent_name):
                 return self.reconstruct_path(came_from, current)
-                
+            
             for neighbor in self.get_neighbors(current, allow_terraforming=allow_terraforming, agent_name=agent_name):
                 tentative_g_score = self.env.calculate_g(neighbor)
                 prev_g = g_score.get(neighbor, float('inf'))
@@ -128,5 +151,6 @@ class AStar:
                     
                     # NUOVO: neighbor.w inserito come terzo criterio (dopo il bonus, prima di h)
                     heapq.heappush(heap, (f_score, -neighbor.lookahead_bonus, neighbor.w, base_h, next(index), neighbor))
-                print('Low level A* - Maximum iteration reached')
+            
+        print('Low level A* - Maximum iteration reached')
         return False

@@ -56,11 +56,36 @@ class SimulationNewRecovery(object):
         self.agents_moved = set()
         agents_to_move = self.agents
         random.shuffle(agents_to_move)
+        obs_pos_now = {}
+        for obs_id, path in algorithm.get_token()['obstacles_paths'].items():
+            pos_prev = (path[0]['x'], path[0]['y']) if path else (0, 0)
+            pos_curr = pos_prev
+            for step in path:
+                if step['t'] <= self.time - 1:
+                    pos_prev = (step['x'], step['y'])
+                if step['t'] <= self.time:
+                    pos_curr = (step['x'], step['y'])
+                else:
+                    break
+            obs_pos_now[obs_id] = (pos_prev, pos_curr)
         # First "move" idle agents or agents stopped by delays
         for agent in agents_to_move:
             current_agent_pos = self.actual_paths[agent['name']][-1]
             self.agents_pos_now.add(tuple([current_agent_pos['x'], current_agent_pos['y']]))
             if len(algorithm.get_token()['agents'][agent['name']]) == 1:
+                agent_cell = tuple([current_agent_pos['x'], current_agent_pos['y']])
+
+                # --- NUOVO: se un ostacolo sta per arrivare fisicamente su questa
+                # cella, mentre l'agente è fermo qui, blocca la spinta e congela
+                # l'ostacolo alla sua posizione precedente ---
+                for obs_id, (prev_pos, curr_pos) in obs_pos_now.items():
+                    if curr_pos == agent_cell and prev_pos != agent_cell:
+                        algorithm.get_token()['obstacles_paths'][obs_id] = [
+                            s for s in algorithm.get_token()['obstacles_paths'][obs_id] if s['t'] < self.time
+                        ]
+                        algorithm.get_token()['obstacles_paths'][obs_id].append(
+                            {'t': self.time, 'x': prev_pos[0], 'y': prev_pos[1], 'agent': None})
+
                 if algorithm.get_replan_every_k_delays():
                     self.times_agent_delayed[agent['name']] = 0
                 self.agents_moved.add(agent['name'])
@@ -162,6 +187,10 @@ class SimulationNewRecovery(object):
         for agent in agents_to_move:
             current_agent_pos = self.actual_paths[agent['name']][-1]
             if agent['name'] not in self.delayed_agents:
+                nxt = tuple(algorithm.get_token()['agents'][agent['name']][1])
+                who = [n for n, p in self.actual_paths.items() if (p[-1]['x'], p[-1]['y']) == nxt]
+                print(f"[BLOCKED] time {self.time}: {agent['name']} at {(current_agent_pos['x'], current_agent_pos['y'])} -> {nxt}, "
+                      f"occupied by {who}, obstacle {nxt in current_obstacles_pos}, failed push {nxt in invalid_cells_due_to_obs_collision}")
                 self.delayed_agents.add(agent['name'])
                 if algorithm.get_replan_every_k_delays():
                     self.times_agent_delayed[agent['name']] = 0

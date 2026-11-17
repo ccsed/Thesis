@@ -1,8 +1,19 @@
 agents:
   - name: 'agent0'
     start: [0, 4]
+    
   - name: 'agent1'
     start: [4, 0]
+    
+  - name: 'agent2'
+    start: [8, 4]
+  - name: 'agent3'
+    start: [4, 8]
+  # - name: 'agent4'
+  #   start: [2, 4]
+  # - name: 'agent5'
+  #   start: [4, 2]
+
 
 map:
   dimensions: [9, 9]
@@ -135,5 +146,5 @@ delays:
   agent1: []
 
 n_tasks: 20
-task_freq: 1
+task_freq: 0.2
 n_delays_per_agent: 0

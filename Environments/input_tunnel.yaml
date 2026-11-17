@@ -1,5 +1,5 @@
-n_tasks: 20
-task_freq: 1
+n_tasks: 10
+task_freq: 0.5
 n_delays_per_agent: 0
 
 map:
@@ -36,23 +36,19 @@ map:
 
   start_locations:
     # Aree di pickup sparse sui lati
-    - [0, 1]
-    - [0, 3]
-    - [0, 5]
-    - [8, 1]
-    - [8, 3]
-    - [8, 5]
+    - [0, 0]
+    - [1, 2]
+    - [1, 4]
+    - [0, 6]
     - [5, 3]
     
 
   goal_locations:
     # Aree di delivery sparse sui lati
-    - [0, 1]
-    - [0, 3]
-    - [0, 5]
-    - [8, 1]
-    - [8, 3]
-    - [8, 5]
+    - [8, 0]
+    - [7, 2]
+    - [7, 4]
+    - [8, 6]
     - [5, 3]
 
 agents:
@@ -63,6 +59,9 @@ agents:
   - name: agent1
     start: [8, 5]
     goal: [8, 5]
+  - name: agent2
+    start: [0, 3]
+    goal: [0, 3]
 
 tasks:
   # 10 task sfalsati a coppie. Mettono alla prova l'A* 

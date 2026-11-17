@@ -5,6 +5,8 @@ agents:
     start: [4, 1]
   - name: 'agent2'
     start: [8, 4]
+  - name: 'agent3'
+    start: [4, 8]
 
 map:
   dimensions: [10, 10]

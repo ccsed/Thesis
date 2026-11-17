@@ -1,0 +1,584 @@
+agents:
+- goal:
+  - 24
+  - 10
+  name: agent0
+  start:
+  - 0
+  - 1
+- goal:
+  - 24
+  - 8
+  name: agent1
+  start:
+  - 0
+  - 3
+- goal:
+  - 24
+  - 6
+  name: agent2
+  start:
+  - 0
+  - 5
+- goal:
+  - 24
+  - 4
+  name: agent3
+  start:
+  - 0
+  - 7
+- goal:
+  - 24
+  - 2
+  name: agent4
+  start:
+  - 0
+  - 9
+- goal:
+  - 0
+  - 10
+  name: agent5
+  start:
+  - 24
+  - 3
+- goal:
+  - 0
+  - 8
+  name: agent6
+  start:
+  - 24
+  - 5
+- goal:
+  - 0
+  - 6
+  name: agent7
+  start:
+  - 24
+  - 7
+- goal:
+  - 0
+  - 4
+  name: agent8
+  start:
+  - 24
+  - 9
+- goal:
+  - 0
+  - 2
+  name: agent9
+  start:
+  - 24
+  - 11
+delays:
+  agent0: []
+  agent1: []
+  agent2: []
+  agent3: []
+  agent4: []
+  agent5: []
+  agent6: []
+  agent7: []
+  agent8: []
+  agent9: []
+map:
+  dimensions:
+  - 25
+  - 13
+  goal_locations:
+  - &id010
+    - 0
+    - 2
+  - &id001
+    - 0
+    - 4
+  - - 0
+    - 6
+  - &id008
+    - 0
+    - 8
+  - &id007
+    - 0
+    - 10
+  - &id003
+    - 24
+    - 2
+  - &id011
+    - 24
+    - 4
+  - &id013
+    - 24
+    - 6
+  - - 24
+    - 8
+  - &id005
+    - 24
+    - 10
+  movable_obstacles:
+  - - 3
+    - 4
+  - - 21
+    - 4
+  - - 3
+    - 8
+  - - 21
+    - 8
+  - - 3
+    - 12
+  - - 21
+    - 12
+  - - 3
+    - 0
+  - - 21
+    - 0
+  - - 12
+    - 4
+  - - 12
+    - 8
+  non_task_endpoints:
+  - - 0
+    - 1
+  - - 0
+    - 3
+  - - 0
+    - 5
+  - - 0
+    - 7
+  - - 0
+    - 9
+  - - 24
+    - 3
+  - - 24
+    - 5
+  - - 24
+    - 7
+  - - 24
+    - 9
+  - - 24
+    - 11
+  obstacles:
+  - - 3
+    - 1
+  - - 4
+    - 1
+  - - 5
+    - 1
+  - - 6
+    - 1
+  - - 7
+    - 1
+  - - 8
+    - 1
+  - - 9
+    - 1
+  - - 10
+    - 1
+  - - 11
+    - 1
+  - - 13
+    - 1
+  - - 14
+    - 1
+  - - 15
+    - 1
+  - - 16
+    - 1
+  - - 17
+    - 1
+  - - 18
+    - 1
+  - - 19
+    - 1
+  - - 20
+    - 1
+  - - 21
+    - 1
+  - - 3
+    - 2
+  - - 4
+    - 2
+  - - 5
+    - 2
+  - - 6
+    - 2
+  - - 7
+    - 2
+  - - 8
+    - 2
+  - - 9
+    - 2
+  - - 10
+    - 2
+  - - 11
+    - 2
+  - - 13
+    - 2
+  - - 14
+    - 2
+  - - 15
+    - 2
+  - - 16
+    - 2
+  - - 17
+    - 2
+  - - 18
+    - 2
+  - - 19
+    - 2
+  - - 20
+    - 2
+  - - 21
+    - 2
+  - - 3
+    - 3
+  - - 4
+    - 3
+  - - 5
+    - 3
+  - - 6
+    - 3
+  - - 7
+    - 3
+  - - 8
+    - 3
+  - - 9
+    - 3
+  - - 10
+    - 3
+  - - 11
+    - 3
+  - - 13
+    - 3
+  - - 14
+    - 3
+  - - 15
+    - 3
+  - - 16
+    - 3
+  - - 17
+    - 3
+  - - 18
+    - 3
+  - - 19
+    - 3
+  - - 20
+    - 3
+  - - 21
+    - 3
+  - - 3
+    - 5
+  - - 4
+    - 5
+  - - 5
+    - 5
+  - - 6
+    - 5
+  - - 7
+    - 5
+  - - 8
+    - 5
+  - - 9
+    - 5
+  - - 10
+    - 5
+  - - 11
+    - 5
+  - - 13
+    - 5
+  - - 14
+    - 5
+  - - 15
+    - 5
+  - - 16
+    - 5
+  - - 17
+    - 5
+  - - 18
+    - 5
+  - - 19
+    - 5
+  - - 20
+    - 5
+  - - 21
+    - 5
+  - - 3
+    - 6
+  - - 4
+    - 6
+  - - 5
+    - 6
+  - - 6
+    - 6
+  - - 7
+    - 6
+  - - 8
+    - 6
+  - - 9
+    - 6
+  - - 10
+    - 6
+  - - 11
+    - 6
+  - - 13
+    - 6
+  - - 14
+    - 6
+  - - 15
+    - 6
+  - - 16
+    - 6
+  - - 17
+    - 6
+  - - 18
+    - 6
+  - - 19
+    - 6
+  - - 20
+    - 6
+  - - 21
+    - 6
+  - - 3
+    - 7
+  - - 4
+    - 7
+  - - 5
+    - 7
+  - - 6
+    - 7
+  - - 7
+    - 7
+  - - 8
+    - 7
+  - - 9
+    - 7
+  - - 10
+    - 7
+  - - 11
+    - 7
+  - - 13
+    - 7
+  - - 14
+    - 7
+  - - 15
+    - 7
+  - - 16
+    - 7
+  - - 17
+    - 7
+  - - 18
+    - 7
+  - - 19
+    - 7
+  - - 20
+    - 7
+  - - 21
+    - 7
+  - - 3
+    - 9
+  - - 4
+    - 9
+  - - 5
+    - 9
+  - - 6
+    - 9
+  - - 7
+    - 9
+  - - 8
+    - 9
+  - - 9
+    - 9
+  - - 10
+    - 9
+  - - 11
+    - 9
+  - - 13
+    - 9
+  - - 14
+    - 9
+  - - 15
+    - 9
+  - - 16
+    - 9
+  - - 17
+    - 9
+  - - 18
+    - 9
+  - - 19
+    - 9
+  - - 20
+    - 9
+  - - 21
+    - 9
+  - - 3
+    - 10
+  - - 4
+    - 10
+  - - 5
+    - 10
+  - - 6
+    - 10
+  - - 7
+    - 10
+  - - 8
+    - 10
+  - - 9
+    - 10
+  - - 10
+    - 10
+  - - 11
+    - 10
+  - - 13
+    - 10
+  - - 14
+    - 10
+  - - 15
+    - 10
+  - - 16
+    - 10
+  - - 17
+    - 10
+  - - 18
+    - 10
+  - - 19
+    - 10
+  - - 20
+    - 10
+  - - 21
+    - 10
+  - - 3
+    - 11
+  - - 4
+    - 11
+  - - 5
+    - 11
+  - - 6
+    - 11
+  - - 7
+    - 11
+  - - 8
+    - 11
+  - - 9
+    - 11
+  - - 10
+    - 11
+  - - 11
+    - 11
+  - - 13
+    - 11
+  - - 14
+    - 11
+  - - 15
+    - 11
+  - - 16
+    - 11
+  - - 17
+    - 11
+  - - 18
+    - 11
+  - - 19
+    - 11
+  - - 20
+    - 11
+  - - 21
+    - 11
+  start_locations:
+  - - 14
+    - 8
+  - &id009
+    - 10
+    - 8
+  - &id006
+    - 14
+    - 4
+  - &id004
+    - 10
+    - 4
+  - &id002
+    - 12
+    - 10
+  - &id012
+    - 12
+    - 2
+n_delays_per_agent: 0
+n_tasks: 20
+task_freq: 0.2
+tasks:
+- goal: *id001
+  start: *id002
+  start_time: 5
+  task_name: task0
+- goal: *id003
+  start: *id004
+  start_time: 9
+  task_name: task1
+- goal: *id005
+  start: *id006
+  start_time: 37
+  task_name: task2
+- goal: *id001
+  start: *id006
+  start_time: 38
+  task_name: task3
+- goal: *id007
+  start: *id006
+  start_time: 40
+  task_name: task4
+- goal: *id007
+  start: *id006
+  start_time: 49
+  task_name: task5
+- goal: *id008
+  start: *id002
+  start_time: 49
+  task_name: task6
+- goal: *id001
+  start: *id009
+  start_time: 59
+  task_name: task7
+- goal: *id001
+  start: *id004
+  start_time: 63
+  task_name: task8
+- goal: *id010
+  start: *id004
+  start_time: 72
+  task_name: task9
+- goal: *id011
+  start: *id012
+  start_time: 72
+  task_name: task10
+- goal: *id013
+  start: *id004
+  start_time: 79
+  task_name: task11
+- goal: *id005
+  start: *id006
+  start_time: 84
+  task_name: task12
+- goal: *id011
+  start: *id009
+  start_time: 97
+  task_name: task13
+- goal: *id005
+  start: *id002
+  start_time: 98
+  task_name: task14
+- goal: *id011
+  start: *id009
+  start_time: 105
+  task_name: task15
+- goal: *id013
+  start: *id009
+  start_time: 106
+  task_name: task16
+- goal: *id013
+  start: *id012
+  start_time: 106
+  task_name: task17
+- goal: *id013
+  start: *id004
+  start_time: 106
+  task_name: task18
+- goal: *id013
+  start: *id002
+  start_time: 111
+  task_name: task19

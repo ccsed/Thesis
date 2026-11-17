@@ -63,6 +63,9 @@ class LogCatcher:
             if any(kw in line.lower() for kw in keywords):
                 warnings.add(line)
         return list(warnings)
+    def has_deadlock_recovery(self):
+        output = self.captured_output.getvalue().lower()
+        return 'causing deadlock' in output or 'deadlock recovery' in output
 
 def verify_no_collisions(simulation, tp):
     states_dict = defaultdict(int)
@@ -199,7 +202,9 @@ def baseline_worker_task(payload):
             while tp_lb.get_completed_tasks() != len(tasks_lb) and sim_lb.get_time() < MAX_SIM_TIME:
                 sim_lb.time_forward(tp_lb)
 
-            if sim_lb.get_time() >= MAX_SIM_TIME or verify_no_collisions(sim_lb, tp_lb):
+            # if sim_lb.get_time() >= MAX_SIM_TIME or verify_no_collisions(sim_lb, tp_lb):
+            #     lb_failed = True
+            if sim_lb.get_time() >= MAX_SIM_TIME or verify_no_collisions(sim_lb, tp_lb) or catcher.has_deadlock_recovery():
                 lb_failed = True
         except SystemExit:
             lb_failed = True
@@ -228,7 +233,9 @@ def baseline_worker_task(payload):
             while tp_ub.get_completed_tasks() != len(tasks_ub) and sim_ub.get_time() < MAX_SIM_TIME:
                 sim_ub.time_forward(tp_ub)
 
-            if sim_ub.get_time() >= MAX_SIM_TIME or verify_no_collisions(sim_ub, tp_ub):
+            # if sim_ub.get_time() >= MAX_SIM_TIME or verify_no_collisions(sim_ub, tp_ub):
+            #     ub_failed = True
+            if sim_ub.get_time() >= MAX_SIM_TIME or verify_no_collisions(sim_ub, tp_ub) or catcher.has_deadlock_recovery():
                 ub_failed = True
         except SystemExit:
             ub_failed = True
@@ -282,12 +289,29 @@ def worker_task(payload):
                 movable_obstacles=movable_obstacles, alpha=alpha, laziness=laziness
             )
 
+        #     while tp.get_completed_tasks() != len(tasks) and simulation.get_time() < MAX_SIM_TIME:
+        #         simulation.time_forward(tp)
+
+        #     warnings = catcher.get_critical_warnings()
+        # except SystemExit:
+        #     warnings = catcher.get_critical_warnings()
+        #     return {'failed': True, 'seed': seed, 'warnings': warnings}
+
+        # if simulation.get_time() >= MAX_SIM_TIME:
+        #     warnings.append(f"TIMEOUT: MAX_SIM_TIME reached.")
+        #     return {'failed': True, 'seed': seed, 'warnings': warnings}
             while tp.get_completed_tasks() != len(tasks) and simulation.get_time() < MAX_SIM_TIME:
                 simulation.time_forward(tp)
 
             warnings = catcher.get_critical_warnings()
+            used_deadlock = catcher.has_deadlock_recovery() # <-- Legge il log
         except SystemExit:
             warnings = catcher.get_critical_warnings()
+            return {'failed': True, 'seed': seed, 'warnings': warnings}
+
+        # SEGNALA FALLIMENTO SE HA USATO IL DEADLOCK
+        if used_deadlock:
+            warnings.append("DEADLOCK RECOVERY TRIGGERED (Excluded from stats)")
             return {'failed': True, 'seed': seed, 'warnings': warnings}
 
         if simulation.get_time() >= MAX_SIM_TIME:
@@ -343,7 +367,7 @@ if __name__ == '__main__':
     map_name_clean = map_yaml_name.replace('.yaml', '')
     map_path = os.path.join(RoothPath.get_root(), config['input_path'], map_yaml_name)
 
-    base_plots_dir = os.path.join(RoothPath.get_root(), 'plots5', map_name_clean)
+    base_plots_dir = os.path.join(RoothPath.get_root(), 'plots7', map_name_clean)
     os.makedirs(base_plots_dir, exist_ok=True)
     
     map_img_path = os.path.join(base_plots_dir, 'map_preview.png')
