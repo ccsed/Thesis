@@ -229,13 +229,19 @@ class Environment(object):
                                 
                             best_next = None
                             best_h = float('inf')
+                            best_has_obs = False
                             for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
                                 nx, ny = cursor[0] + dx, cursor[1] + dy
                                 if 0 <= nx < self.dimension[0] and 0 <= ny < self.dimension[1] and (nx, ny) not in self.obstacles and (nx, ny, state.time + step) not in self.moving_obstacles:
                                     h_val = self.admissible_heuristic(State(0, Location(nx, ny)), agent_name)
-                                    if h_val < best_h:
+                                    # On a tie, follow the cell holding a movable obstacle: the probe is still greedy,
+                                    # but it no longer misses an obstacle on an equally good direction (e.g. at a
+                                    # corridor mouth), where pulling it back is the only way through.
+                                    has_obs = h_val <= best_h and self.get_obstacle_at(Location(nx, ny), state.delta_o, time=state.time + 1 + step) is not None
+                                    if h_val < best_h or (h_val == best_h and has_obs and not best_has_obs):
                                         best_h = h_val
                                         best_next = (nx, ny)
+                                        best_has_obs = has_obs
                             if best_next is None:
                                 break
                             
