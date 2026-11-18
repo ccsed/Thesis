@@ -287,14 +287,15 @@ class TokenPassingRecovery(object):
         for path in agents_paths:
             if len(path) == 1:
                 obstacles.add((path[0][0], path[0][1]))
-            if 1 < len(path) <= time_start:
+            if 1 < len(path) <= time_start + 1:
                 obstacles.add((path[-1][0], path[-1][1]))
         for agent_name in delayed_agents:
             obstacles.add(tuple(self.token['agents'][agent_name][0]))
         return obstacles
 
     def check_safe_idle(self, agent_pos):
-        if tuple(agent_pos) not in self.v_ep:
+        # Free agents may only wait on non-task endpoints (Section 2.2): task endpoints are not safe resting cells
+        if tuple(agent_pos) not in {tuple(ep) for ep in self.non_task_endpoints}:
             return False
         for task_name, task in self.token['tasks'].items():
             if tuple(task[0]) == tuple(agent_pos) or tuple(task[1]) == tuple(agent_pos):
@@ -343,10 +344,12 @@ class TokenPassingRecovery(object):
             active_task_nodes.add(tuple(task['start']))
             active_task_nodes.add(tuple(task['goal']))
 
-        
+        # A non-task endpoint is free only if no other agent is resting there or ends its path there
+        taken = self.token['occupied_non_task_endpoints'] | (self.token['path_ends'] - {tuple(agent_pos)})
+
         for endpoint in self.non_task_endpoints:
             ep_tuple = tuple(endpoint)
-            if ep_tuple not in self.token['occupied_non_task_endpoints'] and ep_tuple not in active_task_nodes:
+            if ep_tuple not in taken and ep_tuple not in active_task_nodes:
                 if dist == -1:
                     dist = self.admissible_heuristic(endpoint, agent_pos)
                     res = endpoint
@@ -359,7 +362,7 @@ class TokenPassingRecovery(object):
         
         if res == -1:
             for endpoint in self.non_task_endpoints:
-                if tuple(endpoint) not in self.token['occupied_non_task_endpoints']:
+                if tuple(endpoint) not in taken:
                     return endpoint
             return agent_pos # Estremo fallback
             

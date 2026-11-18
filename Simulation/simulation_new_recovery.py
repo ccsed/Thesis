@@ -184,6 +184,29 @@ class SimulationNewRecovery(object):
                             algorithm.get_token()['agents'][agent['name']] = algorithm.get_token()['agents'][agent['name']][1:]
                             self.actual_paths[agent['name']].append({'t': self.time, 'x': x_new, 'y': y_new})
             agents_to_move = [x for x in agents_to_move if x['name'] not in self.agents_moved]
+        # Rotations: agents that each move into the cell the next one leaves (cycle of length >= 3) are a valid
+        # plan (no vertex or swap conflict), but the loop above never starts them. Move each such cycle together.
+        next_of = {}
+        for agent in agents_to_move:
+            if agent['name'] not in self.delayed_agents and len(algorithm.get_token()['agents'][agent['name']]) > 1:
+                cur = self.actual_paths[agent['name']][-1]
+                nxt = tuple(algorithm.get_token()['agents'][agent['name']][1])
+                if nxt not in current_obstacles_pos and nxt not in invalid_cells_due_to_obs_collision:
+                    next_of[(cur['x'], cur['y'])] = (agent, nxt)
+        in_cycle = set()
+        for start in list(next_of):
+            cycle, cell = [], start
+            while cell in next_of and cell not in cycle and cell not in in_cycle:
+                cycle.append(cell)
+                cell = next_of[cell][1]
+            if cell == start and len(cycle) >= 3:
+                for c in cycle:
+                    agent, nxt = next_of[c]
+                    self.agents_moved.add(agent['name'])
+                    algorithm.get_token()['agents'][agent['name']] = algorithm.get_token()['agents'][agent['name']][1:]
+                    self.actual_paths[agent['name']].append({'t': self.time, 'x': nxt[0], 'y': nxt[1]})
+                in_cycle |= set(cycle)
+        agents_to_move = [x for x in agents_to_move if x['name'] not in self.agents_moved]
         for agent in agents_to_move:
             current_agent_pos = self.actual_paths[agent['name']][-1]
             if agent['name'] not in self.delayed_agents:
