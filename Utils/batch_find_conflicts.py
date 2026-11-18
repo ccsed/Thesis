@@ -224,7 +224,8 @@ def single_run(map_path, seed, alpha, radius, laziness, max_time=MAX_SIM_TIME, s
                               a_star_max_iter=ASTAR_MAX_ITER, k=0, pd=0.0, p_max=1, p_iter=1,
                               terraforming_radius=radius, new_recovery=True,
                               movable_obstacles=m.get('movable_obstacles', []),
-                              alpha=alpha, laziness=laziness)
+                              alpha=alpha, laziness=laziness,
+                              all_task_endpoints=m['start_locations'] + m['goal_locations'])
     monitor = PlanMonitor(tp, simulation)
     while tp.get_completed_tasks() != len(tasks) and simulation.get_time() < max_time:
         simulation.time_forward(tp)

@@ -71,7 +71,8 @@ if __name__ == '__main__':
     tp = TokenPassingRecovery(agents, dimensions, obstacles, non_task_endpoints, simulation,
                               a_star_max_iter=args.a_star_max_iter, k=args.k,
                               replan_every_k_delays=False, pd=args.pd, p_max=args.p, p_iter=args.p_iter, terraforming_radius=args.radius,
-                              new_recovery=True, movable_obstacles=movable_obstacles, alpha=args.alpha, laziness=args.laziness)
+                              new_recovery=True, movable_obstacles=movable_obstacles, alpha=args.alpha, laziness=args.laziness,
+                              all_task_endpoints=param['map']['start_locations'] + param['map']['goal_locations'])
     while tp.get_completed_tasks() != len(tasks):
         simulation.time_forward(tp)
 

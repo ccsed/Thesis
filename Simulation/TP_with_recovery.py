@@ -165,7 +165,79 @@ class TokenPassingRecovery(object):
             candidates.append(cells)
 
         n = len(movable)
+        cand_cells = [[c for _, c in cells] for cells in candidates]
+
+        def constructive_config(a, b, tries=30):
+            # Pre-check that builds a witness configuration directly: a path from a to b that avoids the cells the
+            # obstacles depend on, then each obstacle matched to a distinct admissible cell off that path.
+            # It returns a configuration only after connected() has verified it, so a success is a valid witness
+            # for Definition 4.1; on failure the exhaustive search below decides, so the verdict is unchanged.
+            penalty = collections.Counter()
+            for cells in cand_cells:
+                for c in cells:
+                    penalty[c] += 1.0 / len(cells)  # cells an obstacle has few alternatives to are expensive
+            for _ in range(tries):
+                dist = {a: 0.0}
+                prev = {}
+                pq = [(0.0, a)]
+                reached = False
+                while pq:
+                    d, c = heapq.heappop(pq)
+                    if d > dist[c]:
+                        continue
+                    if c == b:
+                        reached = True
+                        break
+                    if c != a and c in ep:
+                        continue  # the path may not traverse other endpoints
+                    for dx, dy in moves:
+                        nb = (c[0] + dx, c[1] + dy)
+                        if not (0 <= nb[0] < self.dimensions[0] and 0 <= nb[1] < self.dimensions[1]) \
+                                or nb in self.obstacles:
+                            continue
+                        nd = d + 1.0 + 10.0 * penalty[nb]
+                        if nd < dist.get(nb, float('inf')):
+                            dist[nb] = nd
+                            prev[nb] = c
+                            heapq.heappush(pq, (nd, nb))
+                if not reached:
+                    return None
+                path = {b}
+                c = b
+                while c != a:
+                    c = prev[c]
+                    path.add(c)
+                allowed = [[c for c in cells if c not in path] for cells in cand_cells]
+                owner = {}
+
+                def augment(j, visited):
+                    for c in allowed[j]:
+                        if c in visited:
+                            continue
+                        visited.add(c)
+                        if c not in owner or augment(owner[c], visited):
+                            owner[c] = j
+                            return True
+                    return False
+
+                unmatched = [j for j in range(n) if not augment(j, set())]
+                if not unmatched:
+                    config = [None] * n
+                    for c, j in owner.items():
+                        config[j] = c
+                    return config if connected(a, b, self.obstacles | set(config)) else None
+                for j in unmatched:  # steer the next path away from the cells these obstacles need
+                    for c in cand_cells[j]:
+                        if c in path:
+                            penalty[c] += 1.0
+            return None
+
         for a, b in pairs:
+            # first configuration of the search below (each obstacle on its nearest admissible cell), then the pre-check
+            config0 = [cells[0] for cells in cand_cells]
+            if (len(set(config0)) == n and connected(a, b, self.obstacles | set(config0))) \
+                    or constructive_config(a, b) is not None:
+                continue
             # joint configurations in increasing order of total displacement, stop at the first that connects a and b
             start = tuple([0] * n)
             heap = [(0, start)]
