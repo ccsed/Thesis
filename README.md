@@ -32,8 +32,6 @@ python demo.py -alpha 0.1 -radius 3 -laziness 5
 | `-no_vis` | Skip the animation at the end of the run | off |
 | `-slow_factor` | Slows down the animation | 1 |
 
-The options `-k`, `-p`, `-pd` and `-p_iter` belong to the delay-robust variants of Token Passing that the simulator was originally built for. They are not used by C-MAPD and should be left at their defaults.
-
 At the end of a run, `output.yaml` contains the agents' and obstacles' paths (`schedule`), the completion time of each task (`completed_tasks_times`), and the total cost, i.e. the agents' travel time plus α times the number of obstacle steps (`cost`).
 
 ## Map format
@@ -73,4 +71,4 @@ The maps used in the paper are:
 
 ## License
 
-MIT, see `LICENSE`. The simulator builds on an existing open-source implementation of Token Passing and CBS; its attribution is restored after the review period.
+MIT, see `LICENSE`. Parts of the code derive from existing open-source implementations of Token Passing and CBS, credited in the file headers.

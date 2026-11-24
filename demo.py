@@ -13,28 +13,17 @@ import random
 if __name__ == '__main__':
     random.seed(17)
     parser = argparse.ArgumentParser()
-    parser.add_argument('-k', help='Robustness parameter for k-TP', default=None, type=int)
-    parser.add_argument('-p', help='Robustness parameter for p-TP', default=None, type=float)
-    parser.add_argument('-pd', help='Expected probability of an agent of being delayed at any time step (p-TP)',
-                        default=0.02, type=float)
-    parser.add_argument('-p_iter', help='Number of times a new path can be recalculated if the one calculated '
-                                        'before exceeds the probability threshold (p-TP)',
-                        default=1, type=int)
     parser.add_argument('-a_star_max_iter', help='Maximum number of states explored by the low-level algorithm',
                         default=5000, type=int)
     parser.add_argument('-slow_factor', help='Slow factor of visualization', default=1, type=int)
     parser.add_argument('-not_rand', help='Use if input has fixed tasks and delays', action='store_true')
     parser.add_argument('-radius', help="Terraforming radius (Radius k)", default=1, type=int)
     parser.add_argument('-alpha', help="Weight alpha", default=100, type=float)
-    parser.add_argument('-laziness', help="Laziness of the radar (number of steps it can take in a single time step)", default=1, type=int)
+    parser.add_argument('-laziness', help="Lookahead (number of steps ahead of the agent in which obstacles are commanded)", default=1, type=int)
     parser.add_argument('-no_vis', help='Disable final visualization', action='store_true')
 
     args = parser.parse_args()
 
-    if args.k is None:
-        args.k = 0
-    if args.p is None:
-        args.p = 1
 
     with open(os.path.join(RoothPath.get_root(), 'config.json'), 'r') as json_file:
         config = json.load(json_file)
@@ -69,8 +58,8 @@ if __name__ == '__main__':
     # Simulate
     simulation = SimulationNewRecovery(tasks, agents, delays=delays)
     tp = TokenPassingRecovery(agents, dimensions, obstacles, non_task_endpoints, simulation,
-                              a_star_max_iter=args.a_star_max_iter, k=args.k,
-                              replan_every_k_delays=False, pd=args.pd, p_max=args.p, p_iter=args.p_iter, terraforming_radius=args.radius,
+                              a_star_max_iter=args.a_star_max_iter, k=0,
+                              replan_every_k_delays=False, pd=0.02, p_max=1, p_iter=1, terraforming_radius=args.radius,
                               new_recovery=True, movable_obstacles=movable_obstacles, alpha=args.alpha, laziness=args.laziness,
                               all_task_endpoints=param['map']['start_locations'] + param['map']['goal_locations'])
     while tp.get_completed_tasks() != len(tasks):
