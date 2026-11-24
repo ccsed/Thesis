@@ -27,12 +27,11 @@ class Location(object):
         return (self.x, self.y)
 
 class State(object):
-    def __init__(self, time, location, delta_o=None, p=0.0, to_move=None, lookahead_bonus=0.0, w=0.0):
+    def __init__(self, time, location, delta_o=None, p=0.0, to_move=None, lookahead_bonus=0.0):
         self.time = time
         self.location = location
         self.delta_o = delta_o if delta_o is not None else frozenset()
         self.p = p
-        self.w = w
         self.to_move = to_move if to_move is not None else ()
         self.lookahead_bonus = lookahead_bonus
     def __eq__(self, other):
@@ -217,7 +216,7 @@ class Environment(object):
                     continue
                 obs_id = self.get_obstacle_at(l_prime, state.delta_o, time=state.time + 1)
                 if obs_id is None:
-                    new_state = State(time=state.time+1, location=l_prime, delta_o=state.delta_o, p=state.p, lookahead_bonus=state.lookahead_bonus, w=state.w)
+                    new_state = State(time=state.time+1, location=l_prime, delta_o=state.delta_o, p=state.p, lookahead_bonus=state.lookahead_bonus)
                     neighbors.append(new_state)
                     
                     if allow_terraforming and self.laziness >= 1 and agent_name is not None:
@@ -250,11 +249,11 @@ class Environment(object):
                             if remote_obs_id is not None:
                                 dist_to_obs = abs(cursor[0] - state.location.x) + abs(cursor[1] - state.location.y)
                                 if dist_to_obs >= 1:
-                                    early_state = State(time=state.time, location=state.location, delta_o=state.delta_o, p=state.p, to_move=((remote_obs_id, l_prime.to_tuple()),), lookahead_bonus=state.lookahead_bonus + 1, w=state.w)
+                                    early_state = State(time=state.time, location=state.location, delta_o=state.delta_o, p=state.p, to_move=((remote_obs_id, l_prime.to_tuple()),), lookahead_bonus=state.lookahead_bonus + 1)
                                     neighbors.append(early_state)
                                 break
                 elif allow_terraforming:
-                    new_state = State(time=state.time, location=state.location, delta_o=state.delta_o, p=state.p, to_move=((obs_id, l_prime.to_tuple()),), lookahead_bonus=state.lookahead_bonus, w=state.w)
+                    new_state = State(time=state.time, location=state.location, delta_o=state.delta_o, p=state.p, to_move=((obs_id, l_prime.to_tuple()),), lookahead_bonus=state.lookahead_bonus)
                     neighbors.append(new_state)
         else:
             (obs_id, target_agent), *rest_to_move = state.to_move
@@ -271,10 +270,8 @@ class Environment(object):
                             curr_obs_loc = (step['x'], step['y'])
                         else:
                             break
-            moves = [(0, 1), (0, -1), (1, 0), (-1, 0), (0, 0)]
+            moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
             for dx, dy in moves:
-                    if (dx, dy) == (0, 0) and state.time >= self.max_time:
-                        continue
                     l_obs_prime = (curr_obs_loc[0] + dx, curr_obs_loc[1] + dy)
                     if abs(l_obs_prime[0] -l_init[0]) + abs(l_obs_prime[1] - l_init[1]) > self.k:
                         continue
@@ -300,26 +297,21 @@ class Environment(object):
                     if blocking_obs_id is None:
                         new_delta = dict(state.delta_o)
                         new_delta[obs_id] = l_obs_prime
-                        if (dx, dy) == (0, 0):
-                            new_p = state.p
-                            new_w = state.w + 1
-                        else:
-                            new_p = state.p + 1
-                            new_w = state.w
+                        new_p = state.p + 1
                         new_delta_fs = frozenset(new_delta.items())
                         if not rest_to_move:
                             if l_obs_prime != target_agent:
-                                new_state = State(time=state.time + 1, location=Location(target_agent[0], target_agent[1]), delta_o=new_delta_fs, p=new_p, to_move=(), lookahead_bonus=state.lookahead_bonus, w=new_w)
+                                new_state = State(time=state.time + 1, location=Location(target_agent[0], target_agent[1]), delta_o=new_delta_fs, p=new_p, to_move=(), lookahead_bonus=state.lookahead_bonus)
                             else:
-                                new_state = State(time=state.time + 1, location=state.location, delta_o=new_delta_fs, p=new_p, to_move=(), lookahead_bonus=state.lookahead_bonus, w=new_w)
+                                new_state = State(time=state.time + 1, location=state.location, delta_o=new_delta_fs, p=new_p, to_move=(), lookahead_bonus=state.lookahead_bonus)
                         else:
-                            new_state = State(time=state.time, location=state.location, delta_o=new_delta_fs, p=new_p, to_move=tuple(rest_to_move), lookahead_bonus=state.lookahead_bonus, w=new_w)
+                            new_state = State(time=state.time, location=state.location, delta_o=new_delta_fs, p=new_p, to_move=tuple(rest_to_move), lookahead_bonus=state.lookahead_bonus)
                         neighbors.append(new_state)
                     else:
                         if any(blocking_obs_id == item[0] for item in state.to_move) or blocking_obs_id == obs_id:
                             continue
                         new_to_move = ((blocking_obs_id, l_obs_prime), (obs_id, target_agent)) + tuple(rest_to_move)
-                        new_state = State(time=state.time, location=state.location, delta_o=state.delta_o, p=state.p, to_move=new_to_move, lookahead_bonus=state.lookahead_bonus, w=state.w)
+                        new_state = State(time=state.time, location=state.location, delta_o=state.delta_o, p=state.p, to_move=new_to_move, lookahead_bonus=state.lookahead_bonus)
                         neighbors.append(new_state)
         valid_neighbors = []
         for n in neighbors:
@@ -487,8 +479,7 @@ class Environment(object):
             self.agent_dict.update({agent['name']:{'start':start_state, 'goal':goal_state}})
     
     def calculate_g(self, state):
-        epsilon = 0.00001
-        return state.time + (self.alpha * state.p) + (self.alpha * state.w)
+        return state.time + (self.alpha * state.p)
 
     def compute_solution(self):
         solution = {}

@@ -44,33 +44,26 @@ class AStar:
         
         g_score = {}
         bonus_score = {}
-        w_score = {}  # track w
         g_score[initial_state] = self.env.calculate_g(initial_state)    
         bonus_score[initial_state] = 0.0
-        w_score[initial_state] = initial_state.w
         h_score = self.admissible_heuristic(initial_state, agent_name)
 
         heap = []
         index = count(0)
-        # initial_state.w is the third element of the tuple
-        heapq.heappush(heap, (g_score[initial_state] + h_score, 0, initial_state.w, h_score, next(index), initial_state))
+        heapq.heappush(heap, (g_score[initial_state] + h_score, 0, h_score, next(index), initial_state))
         normal_expanded = 0
         intermediate_expanded = 0
         max_closed_set_bucket = 0
         while heap and (self.max_iter == -1 or self.iter < self.max_iter):
             self.iter = self.iter + 1
             
-            # unpack the 6-element tuple
-            current_f, _, _, _, _, current = heapq.heappop(heap)
+            current_f, _, _, _, current = heapq.heappop(heap)
             if current.is_intermidiate():
                 intermediate_expanded += 1
             else:
                 normal_expanded += 1
             
-            # f needs no correction
-            physical_f = current_f - (self.env.alpha * current.w)
-
-            if physical_f > upper_bound:
+            if current_f > upper_bound:
                 continue
                         
             current_g = self.env.calculate_g(current)
@@ -106,25 +99,20 @@ class AStar:
                 tentative_g_score = self.env.calculate_g(neighbor)
                 prev_g = g_score.get(neighbor, float('inf'))
                 prev_bonus = bonus_score.get(neighbor, -1.0)
-                prev_w = w_score.get(neighbor, float('inf'))
                 
                 # Tie-breaking order:
                 # 1. lower g cost
                 # 2. equal g, more proactive delegations
-                # 3. equal g and proactivity, less induced waiting (w)
                 if (tentative_g_score < prev_g) or \
-                   (tentative_g_score == prev_g and neighbor.lookahead_bonus > prev_bonus) or \
-                   (tentative_g_score == prev_g and neighbor.lookahead_bonus == prev_bonus and neighbor.w < prev_w):
+                   (tentative_g_score == prev_g and neighbor.lookahead_bonus > prev_bonus):
                     
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g_score
                     bonus_score[neighbor] = neighbor.lookahead_bonus
-                    w_score[neighbor] = neighbor.w
                     base_h = self.admissible_heuristic(neighbor, agent_name)
                     f_score = tentative_g_score + base_h 
                     
-                    # neighbor.w is the third criterion (after the bonus, before h)
-                    heapq.heappush(heap, (f_score, -neighbor.lookahead_bonus, neighbor.w, base_h, next(index), neighbor))
+                    heapq.heappush(heap, (f_score, -neighbor.lookahead_bonus, base_h, next(index), neighbor))
             
         print('Low level A* - Maximum iteration reached')
         return False
