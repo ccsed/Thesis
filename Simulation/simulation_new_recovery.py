@@ -75,9 +75,8 @@ class SimulationNewRecovery(object):
             if len(algorithm.get_token()['agents'][agent['name']]) == 1:
                 agent_cell = tuple([current_agent_pos['x'], current_agent_pos['y']])
 
-                # --- NUOVO: se un ostacolo sta per arrivare fisicamente su questa
-                # cella, mentre l'agente è fermo qui, blocca la spinta e congela
-                # l'ostacolo alla sua posizione precedente ---
+                # If an obstacle is about to enter this cell while the agent is
+                # standing here, block the push and keep the obstacle in place
                 for obs_id, (prev_pos, curr_pos) in obs_pos_now.items():
                     if curr_pos == agent_cell and prev_pos != agent_cell:
                         algorithm.get_token()['obstacles_paths'][obs_id] = [
@@ -95,15 +94,12 @@ class SimulationNewRecovery(object):
                 if self.delays is not None:
                     if agent['name'] in self.delays and self.time in self.delays[agent['name']]:
                         self.agents_moved.add(agent['name'])
-                    # if self.time in self.delays[agent['name']]:
-                    #     self.agents_moved.add(agent['name'])
                         if algorithm.get_replan_every_k_delays():
                             self.increase_delay_counter(agent, algorithm.get_k())
                         if hasattr(algorithm, 'shift_obstacle_trajectories'):
                             algorithm.shift_obstacle_trajectories(agent['name'], self.time)
                         #self.delayed_agents.add(agent['name'])
                         # Don't consider forced replans
-                        #algorithm.get_token()['n_replans'] = algorithm.get_token()['n_replans'] - 1
                         self.actual_paths[agent['name']].append(
                             {'t': self.time, 'x': current_agent_pos['x'], 'y': current_agent_pos['y']})
                 elif self.delays_now > 0:
@@ -115,20 +111,8 @@ class SimulationNewRecovery(object):
                         algorithm.shift_obstacle_trajectories(agent['name'], self.time)
                     #self.delayed_agents.add(agent['name'])
                     # Don't consider forced replans
-                    #algorithm.get_token()['n_replans'] = algorithm.get_token()['n_replans'] - 1
                     self.actual_paths[agent['name']].append(
                         {'t': self.time, 'x': current_agent_pos['x'], 'y': current_agent_pos['y']})
-        # Check moving agents doesn't collide with others
-        # agents_to_move = [x for x in agents_to_move if x['name'] not in self.agents_moved]
-        # current_obstacles_pos = set()
-        # for obs_id, path in algorithm.get_token()['obstacles_paths'].items():
-        #     curr_pos = (path[0]['x'], path[0]['y']) if path else (0,0)
-        #     for step in path:
-        #         if step['t'] <= self.time:
-        #             curr_pos = (step['x'], step['y'])
-        #         else:
-        #             break
-        #     current_obstacles_pos.add(curr_pos)
         # Check moving agents doesn't collide with others
         agents_to_move = [x for x in agents_to_move if x['name'] not in self.agents_moved]
         
@@ -148,7 +132,7 @@ class SimulationNewRecovery(object):
                 else:
                     break
             
-            # Se la cella di arrivo è già reclamata da un altro ostacolo, la spinta è fallita
+            # The push fails if another obstacle has already claimed the target cell
             for other_obs, other_pos_curr in obs_positions_at_t.items():
                 if pos_curr == other_pos_curr:
                     invalid_cells_due_to_obs_collision.add(pos_prev)
@@ -164,15 +148,10 @@ class SimulationNewRecovery(object):
                 current_agent_pos = self.actual_paths[agent['name']][-1]
                 if agent['name'] not in self.delayed_agents:
                     if len(algorithm.get_token()['agents'][agent['name']]) > 1:
-                        # x_new = algorithm.get_token()['agents'][agent['name']][1][0]
-                        # y_new = algorithm.get_token()['agents'][agent['name']][1][1]
-                        # is_hitting_obstacle = tuple([x_new, y_new]) in current_obstacles_pos
-                        # if (tuple([x_new, y_new]) not in self.agents_pos_now and not is_hitting_obstacle) or \
-                        #         tuple([x_new, y_new]) == tuple(tuple([current_agent_pos['x'], current_agent_pos['y']])):
                         x_new = algorithm.get_token()['agents'][agent['name']][1][0]
                         y_new = algorithm.get_token()['agents'][agent['name']][1][1]
                         is_hitting_obstacle = tuple([x_new, y_new]) in current_obstacles_pos
-                        # L'agente non può muoversi se sta entrando nella cella di una spinta fallita
+                        # The agent cannot move into the cell of a failed push
                         is_hitting_failed_push = tuple([x_new, y_new]) in invalid_cells_due_to_obs_collision
                         
                         if (tuple([x_new, y_new]) not in self.agents_pos_now and not is_hitting_obstacle and not is_hitting_failed_push) or \

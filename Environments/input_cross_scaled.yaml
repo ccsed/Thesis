@@ -1,150 +1,133 @@
 agents:
-  - name: 'agent0'
-    start: [0, 4]
-    
-  - name: 'agent1'
-    start: [4, 0]
-    
-  - name: 'agent2'
-    start: [8, 4]
-  - name: 'agent3'
-    start: [4, 8]
-  # - name: 'agent4'
-  #   start: [2, 4]
-  # - name: 'agent5'
-  #   start: [4, 2]
-
-
+- name: agent0
+  start: [0, 4]
+- name: agent1
+  start: [4, 0]
+- name: agent2
+  start: [8, 4]
+- name: agent3
+  start: [4, 8]
 map:
   dimensions: [9, 9]
-  start_locations: 
-    - [0, 4]
-    - [8, 4]
-    - [4, 0]
-    - [4, 8]
-    - [2, 4]  # Vicolo cieco sx, prima dell'ostacolo mobile
-    - [4, 3]  # Vicolo cieco alto, prima dell'ostacolo mobile
-    - [5, 4]  # Vicolo cieco dx, speculare
-    - [4, 5]  # Vicolo cieco basso, speculare
-  goal_locations: 
-    - [8, 4]
-    - [0, 4]
-    - [4, 8]
-    - [4, 0]
-    - [2, 4]  # Vicolo cieco sx, prima dell'ostacolo mobile
-    - [4, 3]  # Vicolo cieco alto, prima dell'ostacolo mobile
-    - [5, 4]  # Vicolo cieco dx, speculare
-    - [4, 5]  # Vicolo cieco basso, speculare
+  start_locations:
+  - [0, 4]
+  - [8, 4]
+  - [4, 0]
+  - [4, 8]
+  - [2, 4]
+  - [4, 3]
+  - [5, 4]
+  - [4, 5]
+  goal_locations:
+  - [8, 4]
+  - [0, 4]
+  - [4, 8]
+  - [4, 0]
+  - [2, 4]
+  - [4, 3]
+  - [5, 4]
+  - [4, 5]
   non_task_endpoints:
-    - [0, 4]
-    - [8, 4]
-    - [4, 0]
-    - [4, 8]
-    - [2, 4]  # Vicolo cieco sx, prima dell'ostacolo mobile
-    - [4, 3]  # Vicolo cieco alto, prima dell'ostacolo mobile
-    - [5, 4]  # Vicolo cieco dx, speculare
-    - [4, 5]  # Vicolo cieco basso, speculare
+  - [0, 4]
+  - [8, 4]
+  - [4, 0]
+  - [4, 8]
+  - [2, 4]
+  - [4, 3]
+  - [5, 4]
+  - [4, 5]
   obstacles:
-    # Muri perimetrali (sopra e sotto)
-    - [0, 0]
-    - [1, 0]
-    - [2, 0]
-    - [3, 0]
-    - [5, 0]
-    - [6, 0]
-    - [7, 0]
-    - [8, 0]
-    - [0, 8]
-    - [1, 8]
-    - [2, 8]
-    - [3, 8]
-    - [5, 8]
-    - [6, 8]
-    - [7, 8]
-    - [8, 8]
-    # Muri perimetrali (sinistra e destra)
-    - [0, 1]
-    - [0, 2]
-    - [0, 3]
-    - [0, 5]
-    - [0, 6]
-    - [0, 7]
-    - [8, 1]
-    - [8, 2]
-    - [8, 3]
-    - [8, 5]
-    - [8, 6]
-    - [8, 7]
-    # Blocco in alto a sx
-    - [2, 5]
-    - [3, 5]
-    - [2, 6]
-    - [3, 6]
-    # Blocco in alto a dx
-    - [5, 5]
-    - [6, 5]
-    - [5, 6]
-    - [6, 6]
-    # Blocco in basso a sx
-    - [2, 2]
-    - [3, 2]
-    - [2, 3]
-    - [3, 3]
-    # Blocco in basso a dx
-    - [5, 2]
-    - [6, 2]
-    - [5, 3]
-    - [6, 3]
+  - [0, 0]
+  - [1, 0]
+  - [2, 0]
+  - [3, 0]
+  - [5, 0]
+  - [6, 0]
+  - [7, 0]
+  - [8, 0]
+  - [0, 8]
+  - [1, 8]
+  - [2, 8]
+  - [3, 8]
+  - [5, 8]
+  - [6, 8]
+  - [7, 8]
+  - [8, 8]
+  - [0, 1]
+  - [0, 2]
+  - [0, 3]
+  - [0, 5]
+  - [0, 6]
+  - [0, 7]
+  - [8, 1]
+  - [8, 2]
+  - [8, 3]
+  - [8, 5]
+  - [8, 6]
+  - [8, 7]
+  - [2, 5]
+  - [3, 5]
+  - [2, 6]
+  - [3, 6]
+  - [5, 5]
+  - [6, 5]
+  - [5, 6]
+  - [6, 6]
+  - [2, 2]
+  - [3, 2]
+  - [2, 3]
+  - [3, 3]
+  - [5, 2]
+  - [6, 2]
+  - [5, 3]
+  - [6, 3]
   movable_obstacles:
-    - [3, 4]
-    - [4, 4]
-
+  - [3, 4]
+  - [4, 4]
 tasks:
-  - task_name: 'task0'
-    start_time: 0
-    start: [0, 4]
-    goal: [8, 4]
-  - task_name: 'task1'
-    start_time: 0
-    start: [4, 0]
-    goal: [4, 8]
-  - task_name: 'task2'
-    start_time: 10
-    start: [8, 4]
-    goal: [0, 4]
-  - task_name: 'task3'
-    start_time: 10
-    start: [4, 8]
-    goal: [4, 0]
-  - task_name: 'task4'
-    start_time: 20
-    start: [0, 4]
-    goal: [8, 4]
-  - task_name: 'task5'
-    start_time: 20
-    start: [4, 0]
-    goal: [4, 8]
-  - task_name: 'task6'
-    start_time: 30
-    start: [8, 4]
-    goal: [0, 4]
-  - task_name: 'task7'
-    start_time: 30
-    start: [4, 8]
-    goal: [4, 0]
-  - task_name: 'task8'
-    start_time: 40
-    start: [0, 4]
-    goal: [8, 4]
-  - task_name: 'task9'
-    start_time: 40
-    start: [4, 0]
-    goal: [4, 8]
-
-delays: 
+- task_name: task0
+  start_time: 0
+  start: [0, 4]
+  goal: [8, 4]
+- task_name: task1
+  start_time: 0
+  start: [4, 0]
+  goal: [4, 8]
+- task_name: task2
+  start_time: 10
+  start: [8, 4]
+  goal: [0, 4]
+- task_name: task3
+  start_time: 10
+  start: [4, 8]
+  goal: [4, 0]
+- task_name: task4
+  start_time: 20
+  start: [0, 4]
+  goal: [8, 4]
+- task_name: task5
+  start_time: 20
+  start: [4, 0]
+  goal: [4, 8]
+- task_name: task6
+  start_time: 30
+  start: [8, 4]
+  goal: [0, 4]
+- task_name: task7
+  start_time: 30
+  start: [4, 8]
+  goal: [4, 0]
+- task_name: task8
+  start_time: 40
+  start: [0, 4]
+  goal: [8, 4]
+- task_name: task9
+  start_time: 40
+  start: [4, 0]
+  goal: [4, 8]
+delays:
   agent0: []
   agent1: []
-
 n_tasks: 20
 task_freq: 0.2
 n_delays_per_agent: 0

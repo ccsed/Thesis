@@ -1,120 +1,86 @@
 n_tasks: 10
 task_freq: 0.5
 n_delays_per_agent: 0
-
 map:
   dimensions: [9, 7]
   obstacles:
-    # --- Muro Inferiore del corridoio ---
-    - [3, 2]
-    - [4, 2]
-    - [5, 2]
-
-    # --- Muro Superiore del corridoio ---
-    - [3, 4]
-    - [4, 4]
-    - [5, 4]
-
+  - [3, 2]
+  - [4, 2]
+  - [5, 2]
+  - [3, 4]
+  - [4, 4]
+  - [5, 4]
   movable_obstacles:
-    # DUE ostacoli mobili in catena dentro il corridoio centrale (y=3).
-    # L'agente deve spingerli verso l'area libera a destra (x=6) o sinistra (x=2)
-    # per potergli girare intorno.
-    - [3, 3]
-    - [4, 3]
-
+  - [3, 3]
+  - [4, 3]
   non_task_endpoints:
-    # 6 Punti di parcheggio/spawn isolati sui bordi estremi, 
-    # perfettamente sicuri per la tua BFS.
-    - [0, 1]
-    - [0, 3]
-    - [0, 5]
-    - [8, 1]
-    - [8, 3]
-    - [8, 5]
-    
-    
-
+  - [0, 1]
+  - [0, 3]
+  - [0, 5]
+  - [8, 1]
+  - [8, 3]
+  - [8, 5]
   start_locations:
-    # Aree di pickup sparse sui lati
-    - [0, 0]
-    - [1, 2]
-    - [1, 4]
-    - [0, 6]
-    - [5, 3]
-    
-
+  - [0, 0]
+  - [1, 2]
+  - [1, 4]
+  - [0, 6]
+  - [5, 3]
   goal_locations:
-    # Aree di delivery sparse sui lati
-    - [8, 0]
-    - [7, 2]
-    - [7, 4]
-    - [8, 6]
-    - [5, 3]
-
+  - [8, 0]
+  - [7, 2]
+  - [7, 4]
+  - [8, 6]
+  - [5, 3]
 agents:
-  # 2 Agenti, partono da angoli opposti
-  - name: agent0
-    start: [0, 1]
-    goal: [0, 1]
-  - name: agent1
-    start: [8, 5]
-    goal: [8, 5]
-  - name: agent2
-    start: [0, 3]
-    goal: [0, 3]
-
+- name: agent0
+  start: [0, 1]
+  goal: [0, 1]
+- name: agent1
+  start: [8, 5]
+  goal: [8, 5]
+- name: agent2
+  start: [0, 3]
+  goal: [0, 3]
 tasks:
-  # 10 task sfalsati a coppie. Mettono alla prova l'A* 
-  # forzando sia l'attraversamento del corridoio a catena, sia le diagonali.
-  
-  # Batch 1: Uno va dritto nel corridoio, l'altro usa il detour inferiore
-  - task_name: task0
-    start: [0, 3]
-    goal: [8, 3]
-    start_time: 0
-  - task_name: task1
-    start: [8, 1]
-    goal: [0, 1]
-    start_time: 2
-
-  # Batch 2: Incroci diagonali
-  - task_name: task2
-    start: [8, 5]
-    goal: [0, 1]
-    start_time: 15
-  - task_name: task3
-    start: [0, 1]
-    goal: [8, 5]
-    start_time: 17
-
-  # Batch 3: Rientro attraverso il corridoio (da destra a sinistra)
-  - task_name: task4
-    start: [8, 3]
-    goal: [0, 3]
-    start_time: 30
-  - task_name: task5
-    start: [0, 5]
-    goal: [8, 5]
-    start_time: 32
-
-  # Batch 4: Diagonale mista
-  - task_name: task6
-    start: [0, 3]
-    goal: [8, 1]
-    start_time: 45
-  - task_name: task7
-    start: [8, 1]
-    goal: [0, 5]
-    start_time: 47
-
-  # Batch 5: Ultime consegne
-  - task_name: task8
-    start: [8, 5]
-    goal: [0, 3]
-    start_time: 60
-  - task_name: task9
-    start: [0, 5]
-    goal: [8, 3]
-    start_time: 62
-
+- task_name: task0
+  start: [0, 3]
+  goal: [8, 3]
+  start_time: 0
+- task_name: task1
+  start: [8, 1]
+  goal: [0, 1]
+  start_time: 2
+- task_name: task2
+  start: [8, 5]
+  goal: [0, 1]
+  start_time: 15
+- task_name: task3
+  start: [0, 1]
+  goal: [8, 5]
+  start_time: 17
+- task_name: task4
+  start: [8, 3]
+  goal: [0, 3]
+  start_time: 30
+- task_name: task5
+  start: [0, 5]
+  goal: [8, 5]
+  start_time: 32
+- task_name: task6
+  start: [0, 3]
+  goal: [8, 1]
+  start_time: 45
+- task_name: task7
+  start: [8, 1]
+  goal: [0, 5]
+  start_time: 47
+- task_name: task8
+  start: [8, 5]
+  goal: [0, 3]
+  start_time: 60
+- task_name: task9
+  start: [0, 5]
+  goal: [8, 3]
+  start_time: 62
 delays: {}

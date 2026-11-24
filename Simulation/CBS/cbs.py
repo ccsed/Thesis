@@ -1,7 +1,7 @@
 """
 Python implementation of Conflict-based search
 author: Ashwin Bose (@atb033)
-author: Giacomo Lodigiani (@Lodz97)
+author: Anonymous
 """
 import sys
 sys.path.insert(0, '../')
@@ -306,10 +306,6 @@ class Environment(object):
                         else:
                             new_p = state.p + 1
                             new_w = state.w
-                        # if (dx, dy) != (0, 0):
-                        #     if not self.is_well_formed(new_delta):
-                        #         continue
-                        # new_p = state.p + 1
                         new_delta_fs = frozenset(new_delta.items())
                         if not rest_to_move:
                             if l_obs_prime != target_agent:
@@ -423,28 +419,8 @@ class Environment(object):
             return False
         if VertexConstraint(state.time, state.location) in self.constraints.vertex_constraints:
             return False
-        # curr_delta = dict(state.delta_o)
-        # for obs_id, obs_pos in curr_delta.items():
-        #     if obs_pos == state.location.to_tuple():
-        #         return False
-        # # for obs_id, trajectory in curr_delta.items():
-        # #     if state.time < len(trajectory):
-        # #         if state.location.to_tuple() == tuple(trajectory[state.time]):
-        # #             return False
-        # #     else:
-        # #         if state.location.to_tuple() == tuple(trajectory[-1]):
-        # #             return False
 
-        # # 4. Controllo collisioni con ostacoli mobili NON ancora spostati
-        # # Se un ostacolo non è in delta_o, significa che è ancora fermo alla sua posizione originale
-        # for loc, obs_id in self.movable_obstacles_map.items():
-        #     if obs_id not in curr_delta:
-        #         if state.location.to_tuple() == loc:
-        #             return False
 
-        # # 5. Controllo vincoli del CBS (altri agenti)
-        # if VertexConstraint(state.time, state.location) in self.constraints.vertex_constraints:
-        #     return False
             
         return True
 
@@ -499,7 +475,7 @@ class Environment(object):
             for obs_id, obs_pos in state.delta_o:
                 if obs_pos in self.v_ep:
                     return False 
-            # La mappa è intrinsecamente Well-Formed grazie ai vincoli cinematici su l_init
+            # Well-formedness follows from the displacement constraints on l_init
             return True
         return False
 
@@ -534,70 +510,15 @@ class Environment(object):
             total_cost += final_state.time + (self.alpha * final_state.p)
         return total_cost
 
-    # def is_well_formed(self, delta_o_dict):
-    #     if len(self.v_ep) <= 1:
-    #         return True
             
     #     import collections
 
-    #     current_obs_positions = {}
-    #     for loc, obs_id in self.movable_obstacles_map.items():
-    #         current_obs_positions[obs_id] = delta_o_dict.get(obs_id, loc)
             
-    #     current_movable_set = set(current_obs_positions.values())
-    #     if current_movable_set & self.v_ep:
-    #         return False
-    #     base_blocked = self.static_obstacles | current_movable_set
         
-    #     def check_connectivity(blocked_cells):
-    #         start_ep = next(iter(self.v_ep))
-    #         if start_ep in blocked_cells: return False
-    #         visited = {start_ep}
-    #         reached = {start_ep}
-    #         queue = collections.deque([start_ep])
-    #         moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-    #         if len(reached) == len(self.v_ep): return True
-    #         while queue:
-    #             curr = queue.popleft()
-    #             for dx, dy in moves:
-    #                 nxt = (curr[0] + dx, curr[1] + dy)
-    #                 if 0 <= nxt[0] < self.dimension[0] and 0 <= nxt[1] < self.dimension[1]:
-    #                     if nxt not in blocked_cells and nxt not in visited:
-    #                         visited.add(nxt)
-    #                         if nxt in self.v_ep:
-    #                             reached.add(nxt)
-    #                             if len(reached) == len(self.v_ep): return True
-    #                         else:
-    #                             queue.append(nxt)
-    #         return len(reached) == len(self.v_ep)
 
-    #     # 1. Controllo Rigoroso Classico (Tutti gli endpoint raggiungibili ADESSO)
-    #     if check_connectivity(base_blocked):
-    #         return True
             
-    #     # 2. Controllo Multi-Ostacolo: La mappa STATICA di base è sana?
-    #     if not check_connectivity(self.static_obstacles):
-    #         return False
             
-    #     # 3. Controllo Spazio di Manovra: Ogni ostacolo ha un parcheggio valido?
-    #     for obs_id, curr_pos in current_obs_positions.items():
-    #         init_pos = self.obs_id_to_init_loc[obs_id]
-    #         has_spot = False
-    #         for dx in range(-self.k, self.k + 1):
-    #             for dy in range(-(self.k - abs(dx)), self.k - abs(dx) + 1):
-    #                 v_park = (init_pos[0] + dx, init_pos[1] + dy)
-    #                 if v_park == curr_pos: continue
-    #                 if not (0 <= v_park[0] < self.dimension[0] and 0 <= v_park[1] < self.dimension[1]): continue
-    #                 if v_park in self.static_obstacles: continue
-    #                 if v_park in self.v_ep: continue
-    #                 has_spot = True
-    #                 break
-    #             if has_spot: break
-    #         # Se anche un solo ostacolo è murato vivo senza parcheggi, la mappa non è well-formed
-    #         if not has_spot:
-    #             return False
                 
-    #     return True
 
 class HighLevelNode(object):
     def __init__(self):

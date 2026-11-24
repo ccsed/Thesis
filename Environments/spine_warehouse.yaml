@@ -181,21 +181,21 @@ map:
   - [17, 10]
   - [8, 4]
   - [11, 8]
-  non_task_endpoints: &id001
+  non_task_endpoints:
   - [2, 1]
   - [8, 1]
   - [14, 1]
   - [5, 12]
   - [11, 12]
   - [17, 12]
-  start_locations: 
+  start_locations:
   - [2, 12]
   - [8, 12]
   - [14, 12]
   - [5, 1]
   - [11, 1]
   - [17, 1]
-  goal_locations: 
+  goal_locations:
   - [1, 6]
   - [18, 6]
   - [1, 5]
@@ -215,23 +215,5 @@ agents:
 - name: agent3
   start: [17, 12]
   goal: [5, 1]
-# - name: agent4
-#   start: [8, 1]
-#   goal: [11, 12]
-# - name: agent5
-#   start: [11, 12]
-#   goal: [8, 1]
-# - name: agent6
-#   start: [11, 1]
-#   goal: [8, 12]
-# - name: agent7
-#   start: [8, 12]
-#   goal: [11, 1]
-# - name: agent8
-#   start: [14, 1]
-#   goal: [1, 6]
-# - name: agent9
-#   start: [1, 6]
-#   goal: [17, 1]
 tasks: []
 delays: {}

@@ -1,6 +1,6 @@
 """
 Python implementation of Token Passing algorithms to solve MAPD problems with delays
-author: Giacomo Lodigiani (@Lodz97)
+author: Anonymous
 """
 from math import fabs
 import random
@@ -266,20 +266,6 @@ class TokenPassingRecovery(object):
                 agents[name] = path
         return agents
     
-    # def get_current_movable_obstacles(self):
-    #     current_obs = []
-    #     base_time = self.simulation.get_time() - 1
-    #     for i in range(len(self.movable_obstacles_list)):
-    #         obs_id = f"obs_{i}"
-    #         path = self.token['obstacles_paths'][obs_id]
-    #         current_pos = path[0]
-    #         for step in path:
-    #             if step['t'] <= base_time:
-    #                 current_pos = step
-    #             else:
-    #                 break
-    #         current_obs.append((current_pos['x'], current_pos['y']))
-    #     return current_obs
     def get_current_movable_obstacles(self):
         timelines = {}
         abs_time_start = self.simulation.get_time() - 1
@@ -366,7 +352,7 @@ class TokenPassingRecovery(object):
         return obstacles
 
     def check_safe_idle(self, agent_pos):
-        # Free agents may only wait on non-task endpoints (Section 2.2): task endpoints are not safe resting cells
+        # Free agents may only wait on non-task endpoints: task endpoints are not safe resting cells
         if tuple(agent_pos) not in {tuple(ep) for ep in self.non_task_endpoints}:
             return False
         for task_name, task in self.token['tasks'].items():
@@ -386,23 +372,6 @@ class TokenPassingRecovery(object):
                     
         return True
 
-    # def get_closest_non_task_endpoint(self, agent_pos):
-    #     dist = -1
-    #     res = -1
-    #     for endpoint in self.non_task_endpoints:
-    #         if tuple(endpoint) not in self.token['occupied_non_task_endpoints']:
-    #             if dist == -1:
-    #                 dist = self.admissible_heuristic(endpoint, agent_pos)
-    #                 res = endpoint
-    #             else:
-    #                 tmp = self.admissible_heuristic(endpoint, agent_pos)
-    #                 if tmp < dist:
-    #                     dist = tmp
-    #                     res = endpoint
-    #     if res == -1:
-    #         print('Error in finding non-task endpoint, is instance well-formed?')
-    #         exit(1)
-    #     return res
 
     def get_closest_non_task_endpoint(self, agent_pos):
         dist = -1
@@ -520,7 +489,6 @@ class TokenPassingRecovery(object):
         if not result:
             print("Solution to non-task endpoint not found for agent", agent_name, " instance is not well-formed.")
             self.deadlock_recovery(agent_name, agent_pos, all_idle_agents, all_delayed_agents, 4)
-            # exit(1)
         else:
             path_to_non_task_endpoint = result['agents']
             obs_trajectories = result['obstacles']
@@ -554,7 +522,7 @@ class TokenPassingRecovery(object):
                 safe_from_obstacles = True
                 for obs_path in self.token['obstacles_paths'].values():
                     for step in obs_path:
-                        # Se l'ostacolo sarà in questa cella da questo momento in poi, scarta la cella
+                        # Discard the cell if the obstacle occupies it from now on
                         if step['t'] >= current_time and (step['x'], step['y']) == cell:
                             safe_from_obstacles = False
                             break
@@ -640,7 +608,6 @@ class TokenPassingRecovery(object):
                 actual_state = self.simulation.get_actual_paths()[name][-1]
                 if path[0] != [actual_state['x'], actual_state['y']]:
                     print('Agent', name, 'delayed!')
-                    # self.token['n_replans'] = self.token['n_replans'] + 1
                     self.token['delayed_agents'].append(name)
                     delayed_agents_pos.append([actual_state['x'], actual_state['y']])
                     self.update_ends(path[-1])
@@ -679,7 +646,6 @@ class TokenPassingRecovery(object):
                     for i in range(len(path)):
                         if path[i] in self.token['agent_at_end_path_pos']:
                             print('Agent', name, 'will impact end task agent, replanning...')
-                            # self.update_ends(path[-1])
                             if path[0] in self.non_task_endpoints:
                                 self.token['occupied_non_task_endpoints'].add(tuple(path[0]))
                             else:
@@ -699,7 +665,6 @@ class TokenPassingRecovery(object):
         idle_agents = self.get_idle_agents()
         while len(idle_agents) > 0:
             agent_name = random.choice(list(idle_agents.keys()))
-            # agent_name = list(idle_agents.keys())[0]
             all_idle_agents = self.token['agents'].copy()
             all_idle_agents.pop(agent_name)
             all_delayed_agents = self.token['delayed_agents'].copy()
@@ -731,14 +696,6 @@ class TokenPassingRecovery(object):
                 env = Environment(self.dimensions, [agent], self.obstacles | idle_obstacles_agents,
                                   moving_obstacles_agents, movable_obstacles=self.get_current_movable_obstacles(), original_obs_pos=self.token['original_obs_pos'], v_ep=self.v_ep, a_star_max_iter=self.a_star_max_iter, alpha=self.alpha, terraforming_radius=self.terraforming_radius, static_obstacles=self.obstacles, laziness=self.laziness)
                 cbs = CBS(env)
-                # result_start = self.search(cbs, agent_name, moving_obstacles_agents)
-                # if not result_start:
-                #     print("Solution not found to task start for agent", agent_name, " idling at current position...")
-                #     if len(self.token['delayed_agents']) == 0 and not self.token['prob_exceeded']:
-                #         print('Instance is not well-formed or a_star_max_iter is too low for this environment.')
-                #         self.deadlock_recovery(agent_name, agent_pos, all_idle_agents, all_delayed_agents, 4)
-                #         # exit(1)
-                # else:
                 result_start = self.search(cbs, agent_name, moving_obstacles_agents)
                 if not result_start:
                     print("Solution not found to task start for agent", agent_name, " idling at current position...")
